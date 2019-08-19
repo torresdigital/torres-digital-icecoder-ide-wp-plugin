@@ -1,4 +1,4 @@
-### === Torres Digital ICECoder IDE Wordpress Plugin ===
+## === Torres Digital ICECoder IDE Wordpress Plugin ===
 
 Contributors: Anderson Torres @atorresbr <br/>
 Tags: IP Location, IP Lookup<br/>
