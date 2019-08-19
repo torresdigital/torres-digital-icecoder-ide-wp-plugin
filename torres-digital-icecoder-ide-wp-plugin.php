@@ -26,7 +26,7 @@ Author URI: https://facebook.com/torresdigital */
             $admin_bar->add_menu( array(
                 'id'    => 'icecoder-ide-sub-item',
                 'parent' => 'icecoder-ide',
-                'title' => 'Torres Digital - facebook',
+                'title' => 'Torres Digital - facebook <i class="fa fa-facebook-square" aria-hidden="true"></i>',
                 'href'  => 'https://www.facebook.com/torresdigital/',
                 'meta'  => array(
                     'title' => __('Torres Digital - facebook'),
@@ -47,18 +47,18 @@ Author URI: https://facebook.com/torresdigital */
             ));
         }
 
-add_action('admin_bar_menu', 'custom_toolbar_link', 999);
 
- add_action( 'admin_menu', 'linked_url' );
-    function linked_url() {
-    add_menu_page( 'linked_url', 'External link', 'read', 'my_slug', '', 'dashicons-text', 1 );
-    }
 
-    add_action( 'admin_menu' , 'linkedurl_function' );
-    function linkedurl_function() {
-    global $menu;
-    $menu[1][2] = "http://www.example.com";
-    }
+/*
+* Font AWesome
+*/
+function wmpudev_enqueue_icon_stylesheet() {
+	wp_register_style( 'fontawesome', 'http:////maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css' );
+	wp_enqueue_style( 'fontawesome');
+}
+add_action( 'wp_enqueue_scripts', 'wmpudev_enqueue_icon_stylesheet' );
+// Add a parent shortcut link
+
 
 /* Style */
 function wpse_load_plugin_css() {
