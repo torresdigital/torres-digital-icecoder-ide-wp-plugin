@@ -47,18 +47,14 @@ Author URI: https://facebook.com/torresdigital */
             ));
         }
 
-add_action('admin_bar_menu', 'custom_toolbar_link', 999);
 
- add_action( 'admin_menu', 'linked_url' );
-    function linked_url() {
-    add_menu_page( 'linked_url', 'External link', 'read', 'my_slug', '', 'dashicons-text', 1 );
-    }
 
-    add_action( 'admin_menu' , 'linkedurl_function' );
-    function linkedurl_function() {
-    global $menu;
-    $menu[1][2] = "http://www.example.com";
-    }
+/*
+* add a group of links under a parent link
+*/
+
+// Add a parent shortcut link
+
 
 /* Style */
 function wpse_load_plugin_css() {
