@@ -1,4 +1,4 @@
-### === Torres Digital ICECoder IDE Wordpress Plugin ===
+## === Torres Digital ICECoder IDE Wordpress Plugin ===
 
 Contributors: Anderson Torres @atorresbr <br/>
 Tags: IP Location, IP Lookup<br/>
@@ -15,7 +15,7 @@ License URI: https://www.gnu.org/licenses/quick-guide-gplv3.pt-br.html
 
 #### == Description ==
 
-Description:  ❉ This plugin allows the ICECoder IDE to be accessed directly through the Wordpress Panel. Simple as that, simple as life should be. Source Code on Git Hub https://github.com/icecoder/ICEcoder | ICECoder IDE Site - https://icecoder.net/
+Description:  ❉ This plugin allows the ICECoder IDE to be accessed directly through the Wordpress Panel. Simple as that, simple as life should be. Source Code on GitHub https://github.com/icecoder/ICEcoder || ICECoder IDE Site - https://icecoder.net/
 
 #### == Installation ==
 
