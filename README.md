@@ -8,33 +8,33 @@ Tested up to: 5.2.1<br/>
 License: GPLv3 or later<br/>
 License URI: https://www.gnu.org/licenses/quick-guide-gplv3.pt-br.html
 
-##### ❉ This plugin allows the ICECoder IDE to be accessed directly through the Wordpress Panel.
+#### ❉ This plugin allows the ICECoder IDE to be accessed directly through the Wordpress Panel.
 
 ![Alt Text](https://repository-images.githubusercontent.com/203049293/2d1d1e80-c1e7-11e9-91c7-76930119c71b)
 
 
-== Description ==
+##### == Description ==
 
 Description:  ❉ This plugin allows the ICECoder IDE to be accessed directly through the Wordpress Panel. Simple as that, simple as life should be. Source Code on Git Hub https://github.com/icecoder/ICEcoder | ICECoder IDE Site - https://icecoder.net/
 
-== Installation ==
+##### == Installation ==
 
 * Upload plugin files to your plugins folder, or install using WordPress built-in Add New Plugin installer;
 * Activate the plugin;
 * Navigate to Plugin Settings and fill settings.
 
-== Frequently Asked Questions ==
+##### == Frequently Asked Questions ==
 
-= This would be an FAQ with the answer below =
+##### = This would be an FAQ with the answer below =
 
-* This plugin is released under a GPL license.
+#### * This plugin is released under a GPL license.
 
-== Screenshots ==
+##### == Screenshots ==
 
 1. Image 01. [amend as relevant]
 2. Image 02. [amend as relevant]
 
-== Changelog ==
+##### == Changelog ==
 
 [amend entries below as relevant]
 = 1.0 =
@@ -44,7 +44,7 @@ Description:  ❉ This plugin allows the ICECoder IDE to be accessed directly th
 = 0.5 =
 * List versions from most recent at top to oldest at bottom.
 
-== Upgrade Notice ==
+##### == Upgrade Notice ==
 
 = 1.0 =
 Upgrade notices describe the reason a user should upgrade. No more than 300 characters.
@@ -52,7 +52,7 @@ Upgrade notices describe the reason a user should upgrade. No more than 300 char
 = 0.5 =
 This version fixes a security related bug. Upgrade immediately.
 
-== Copyright and licensing ==
+##### == Copyright and licensing ==
 
 This plugin is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License or (at your option) any later version.
 
