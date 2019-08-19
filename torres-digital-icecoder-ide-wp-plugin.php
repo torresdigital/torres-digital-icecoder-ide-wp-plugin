@@ -26,10 +26,10 @@ Author URI: https://facebook.com/torresdigital */
             $admin_bar->add_menu( array(
                 'id'    => 'icecoder-ide-sub-item',
                 'parent' => 'icecoder-ide',
-                'title' => 'My Sub Menu Item',
-                'href'  => '#',
+                'title' => 'Torres Digital - facebook',
+                'href'  => 'https://www.facebook.com/torresdigital/',
                 'meta'  => array(
-                    'title' => __('My Sub Menu Item'),
+                    'title' => __('Torres Digital - facebook'),
                     'target' => '_blank',
                     'class' => 'my_menu_item_class'
                 ),
@@ -46,69 +46,6 @@ Author URI: https://facebook.com/torresdigital */
                 ),
             ));
         }
-
-
-
-/*
-* add a group of links under a parent link
-*/
-
-// Add a parent shortcut link
-
-function custom_toolbar_link($wp_admin_bar) {
-    $args = array(
-        'id' => 'wpbeginner',
-        'title' => 'WPBeginner',
-        'href' => 'https://www.wpbeginner.com',
-        'meta' => array(
-            'class' => 'wpbeginner',
-            'title' => 'Visit WPBeginner'
-            )
-    );
-    $wp_admin_bar->add_node($args);
-
-// Add the first child link
-
-    $args = array(
-        'id' => 'wpbeginner-guides',
-        'title' => 'WPBeginner Guides',
-        'href' => 'https://www.wpbeginner.com/category/beginners-guide/',
-        'parent' => 'wpbeginner',
-        'meta' => array(
-            'class' => 'wpbeginner-guides',
-            'title' => 'Visit WordPress Beginner Guides'
-            )
-    );
-    $wp_admin_bar->add_node($args);
-
-// Add another child link
-$args = array(
-        'id' => 'wpbeginner-tutorials',
-        'title' => 'WPBeginner Tutorials',
-        'href' => 'https://www.wpbeginner.com/category/wp-tutorials/',
-        'parent' => 'wpbeginner',
-        'meta' => array(
-            'class' => 'wpbeginner-tutorials',
-            'title' => 'Visit WPBeginner Tutorials'
-            )
-    );
-    $wp_admin_bar->add_node($args);
-
-// Add a child link to the child link
-
-$args = array(
-        'id' => 'wpbeginner-themes',
-        'title' => 'WPBeginner Themes',
-        'href' => 'https://www.wpbeginner.com/category/wp-themes/',
-        'parent' => 'wpbeginner-tutorials',
-        'meta' => array(
-            'class' => 'wpbeginner-themes',
-            'title' => 'Visit WordPress Themes Tutorials on WPBeginner'
-            )
-    );
-    $wp_admin_bar->add_node($args);
-
-}
 
 add_action('admin_bar_menu', 'custom_toolbar_link', 999);
 
