@@ -5,24 +5,21 @@ i, cite, em, var, dfn {
 }
 
 #wp-admin-bar-icecoder-ide fa {font-family: "Font Awesome"}
+.fa.fa-snowflake-o:before {font-family: 'FontAwesome';content: "\f2dc";}
+.fa.fa-facebook-square:before {
 
-
-.fa.fa-facebook-square:before,
-.fa.fa-facebook-square:after,
-
-.fa.fa-facebook-square {
-
-    font-family: 'FontAwesome' !important;
-    content: "\f232" !important;
-    font-size: 25px !important;
-    font-weight: 300 !important;
-    color: #d70baa !important;
+    font-family: 'FontAwesome';
+    content: "\f232";
+    font-size: 25px;
+    font-weight: 300;
+    color: #d70baa;
     bottom: 2px;
     position: relative;
     right: 1px;
-	font-style: initial !important;
+	font-style: initial;
 
 }
+
 
 .informacoes p:hover {
 
