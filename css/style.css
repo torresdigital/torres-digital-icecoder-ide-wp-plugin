@@ -1,13 +1,13 @@
-=/*Torres Digital IP Location*/
+/*Torres Digital IP Location*/
 
-#wp-admin-bar-icecoder-ide a {
-    background: linear-gradient(270deg, #5f0eae, #f200c8, #17f200, #00f2e9, #f2d700, #2600f2);
+#wp-admin-bar-icecoder-ide {
+    background: linear-gradient(270deg, #5f0eae, #f200c8, #17f200, #00f2e9, #f2d700, #2600f2) !important;
         background-size: auto;
-    background-size: 1200% 1200%;
-    -webkit-animation: AnimationName 30s ease infinite;
-    -moz-animation: AnimationName 30s ease infinite;
-    -o-animation: AnimationName 30s ease infinite;
-    animation: AnimationName 30s ease infinite;
+    background-size: 1200% 1200% !important;
+    -webkit-animation: AnimationName 30s ease infinite !important;
+    -moz-animation: AnimationName 30s ease infinite !important;
+    -o-animation: AnimationName 30s ease infinite !important;
+    animation: AnimationName 30s ease infinite !important;
 }
 
 html i, html cite, html em, html var, html dfn { font-style: initial;}
@@ -21,8 +21,9 @@ html i, html cite, html em, html var, html dfn { font-style: initial;}
     color: #fff;
     bottom: 0;
     position: relative;
-    right: 3px;
+    left: 6px;
 	font-style: initial;
+    font-size:15px,
 
 }
 
@@ -54,24 +55,24 @@ button, input[type="color"], input[type="reset"], input[type="button"], input[ty
 }
 
  @-webkit-keyframes AnimationName {
-    0%{background-position:0% 33%}
-    50%{background-position:100% 68%}
+    0%{background-position:0% 33% !important}
+    50%{background-position:100% 68% !important}
     100%{background-position:0% 33%}
 }
 @-moz-keyframes AnimationName {
-    0%{background-position:0% 33%}
-    50%{background-position:100% 68%}
-    100%{background-position:0% 33%}
+    0%{background-position:0% 33% !important}
+    50%{background-position:100% 68% !important}
+    100%{background-position:0% 33% !important}
 }
 @-o-keyframes AnimationName {
-    0%{background-position:0% 33%}
-    50%{background-position:100% 68%}
-    100%{background-position:0% 33%}
+    0%{background-position:0% 33% !important}
+    50%{background-position:100% 68% !important}
+    100%{background-position:0% 33% !important}
 }
 @keyframes AnimationName {
-    0%{background-position:0% 33%}
-    50%{background-position:100% 68%}
-    100%{background-position:0% 33%}
+    0%{background-position:0% 33% !important}
+    50%{background-position:100% 68% !important}
+    100%{background-position:0% 33% !important}
 }
 
 /*==================================================
