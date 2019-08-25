@@ -1,21 +1,27 @@
 =/*Torres Digital IP Location*/
 
-i, cite, em, var, dfn {
-    font-style: initial !important;
+#wp-admin-bar-icecoder-ide a {
+    background: linear-gradient(270deg, #5f0eae, #f200c8, #17f200, #00f2e9, #f2d700, #2600f2);
+        background-size: auto;
+    background-size: 1200% 1200%;
+    -webkit-animation: AnimationName 30s ease infinite;
+    -moz-animation: AnimationName 30s ease infinite;
+    -o-animation: AnimationName 30s ease infinite;
+    animation: AnimationName 30s ease infinite;
 }
+
+html i, html cite, html em, html var, html dfn { font-style: initial;}
 
 #wp-admin-bar-icecoder-ide fa {font-family: "Font Awesome"}
 .fa.fa-snowflake-o:before {font-family: 'FontAwesome';content: "\f2dc";}
 .fa.fa-facebook-square:before {
 
     font-family: 'FontAwesome';
-    content: "\f232";
-    font-size: 25px;
-    font-weight: 300;
-    color: #d70baa;
-    bottom: 2px;
+    content: "\f082";
+    color: #fff;
+    bottom: 0;
     position: relative;
-    right: 1px;
+    right: 3px;
 	font-style: initial;
 
 }
@@ -47,6 +53,26 @@ button, input[type="color"], input[type="reset"], input[type="button"], input[ty
     user-select: none;
 }
 
+ @-webkit-keyframes AnimationName {
+    0%{background-position:0% 33%}
+    50%{background-position:100% 68%}
+    100%{background-position:0% 33%}
+}
+@-moz-keyframes AnimationName {
+    0%{background-position:0% 33%}
+    50%{background-position:100% 68%}
+    100%{background-position:0% 33%}
+}
+@-o-keyframes AnimationName {
+    0%{background-position:0% 33%}
+    50%{background-position:100% 68%}
+    100%{background-position:0% 33%}
+}
+@keyframes AnimationName {
+    0%{background-position:0% 33%}
+    50%{background-position:100% 68%}
+    100%{background-position:0% 33%}
+}
 
 /*==================================================
 =            Bootstrap 3 Media Queries             =
