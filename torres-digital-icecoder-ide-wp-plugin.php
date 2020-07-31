@@ -1,7 +1,7 @@
 <?php /* The Silence is Gold!
 
 Plugin Name: Torres Digital ICECoder IDE WP Plugin
-Plugin URI: http://torresdigital.com.br/
+Plugin URI: http://torresdigital.tk/
 Description: ❉ This plugin allows the <strong>ICECoder IDE</strong> to be accessed directly through the Wordpress Panel. Simple as that, simple as life should be. Source Code on GitHub https://github.com/icecoder/ICEcoder | ICECoder IDE Site - https://icecoder.net/
 Version: 1.o
 Author: Torres Digital -Sites → Lojas Virtuais e e-Commerce
