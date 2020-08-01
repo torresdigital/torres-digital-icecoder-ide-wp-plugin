@@ -18,7 +18,7 @@ Author URI: https://facebook.com/torresdigital */
                 'title' => ' ❉ ICECoder IDE - Login',
                 'href'  => '/wp-content/plugins/torres-digital-icecoder-ide-wp-plugin/ICEcoder/lib/login.php',
                 'meta'  => array(
-                    'title' => __('ICECoder IDE - Login'),
+                    'title' => __('* ICECoder IDE - Login'),
                     'target' => '_blank',
                     'class' => 'icecoder-ide'
                 ),
