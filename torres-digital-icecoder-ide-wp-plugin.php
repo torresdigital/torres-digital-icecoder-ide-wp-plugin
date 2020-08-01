@@ -3,7 +3,7 @@
 Plugin Name: Torres Digital ICECoder IDE WP Plugin
 Plugin URI: http://torresdigital.com.br/
 Description: ❉ This plugin allows the <strong>ICECoder IDE</strong> to be accessed directly through the Wordpress Panel. Simple as that, simple as life should be. Source Code on GitHub https://github.com/icecoder/ICEcoder | ICECoder IDE Site - https://icecoder.net/
-Version: 1.o
+Version: 1.o - 2020
 Author: Torres Digital -Sites → Lojas Virtuais e e-Commerce
 Author URI: https://facebook.com/torresdigital */
 
