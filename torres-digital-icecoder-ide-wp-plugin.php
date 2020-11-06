@@ -15,10 +15,10 @@ Author URI: https://facebook.com/torresdigital */
         function add_toolbar_items($admin_bar){
             $admin_bar->add_menu( array(
                 'id'    => 'icecoder-ide',
-                'title' => ' ❉ ICECoder IDE - Login',
+                'title' => ' ❉ ICECoder IDE - LOGIN',
                 'href'  => '/wp-content/plugins/torres-digital-icecoder-ide-wp-plugin-master/ICEcoder/lib/login.php',
                 'meta'  => array(
-                    'title' => __('* ICECoder IDE - Login'),
+                    'title' => __('* ICECoder IDE - LOGIN'),
                     'target' => '_blank',
                     'class' => 'icecoder-ide'
                 ),
