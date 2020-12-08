@@ -73,19 +73,19 @@ function copyOldVersion() {
 			}
 		}
 	}
-	$icv_url = "https://icecoder.net/latest-version.txt";
+	$icvURL = "https://icecoder.net/latest-version.txt";
 	echo 'Detecting current version of ICEcoder...<br>';
-	$icvInfo = getData($icv_url,'curl','Sorry, couldn\'t figure out latest version.');
+	$icvInfo = getData($icvURL,'curl','Sorry, couldn\'t figure out latest version.');
 	echo 'Latest version of ICEcoder is '.$icvInfo.'<br>';
 	openZipNew($icvInfo);
 }
 
 function openZipNew($icvInfo) {
 	echo 'Retrieving zip from ICEcoder site...<br>';
-	$source = 'ICEcoder v'.$icvInfo;
+	$source = 'ICEcoder '.$icvInfo;
 	$target = '../';
 
-	$remoteFile = 'https://icecoder.net/ICEcoder-v'.(str_replace(" beta", "-beta",$icvInfo)).'.zip';
+	$remoteFile = 'https://icecoder.net/ICEcoder-'.(str_replace(" beta", "-beta",$icvInfo)).'.zip';
     	$file = "../tmp/new-version.zip";
 	$fileData = getData($remoteFile,'curl','Sorry, couldn\'t get latest version zip file.');
 	echo 'Storing zip file...<br>';
