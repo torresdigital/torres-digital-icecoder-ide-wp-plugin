@@ -66,7 +66,7 @@ function wpse_load_plugin_css() {
 
     wp_enqueue_style( 'style', $plugin_url . 'css/style.css' );
     /*wp_enqueue_style( 'style2', $plugin_url . 'css/style2.css' );*/
-
+  /*wp_enqueue_style( 'style2', $plugin_url . 'css/style2.css' );*/
 }
 add_action( 'wp_enqueue_scripts', 'wpse_load_plugin_css' );
 
