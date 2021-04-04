@@ -275,17 +275,6 @@ if (true === $havePrettier && true === file_exists(dirname(__FILE__) . "/plugins
                 <li><a nohref onclick="ICEcoder.pluginsManager()">Plugins</a></li>
             </ul>
         </div>
-        <!--
-        FTP is a far less used method of data transfer and so this menu hidden for now
-        Uncomment if you really want to use it but please note, in future versions of ICEcoder
-        that FTP is likely to be removed altogether
-		<div id="optionsSource" class="optionsList" onmouseover="ICEcoder.showHideFileNav('show', this.id)" onmouseout="ICEcoder.showHideFileNav('hide', this.id);ICEcoder.canShowFMNav = false">
-			<ul>
-				<li><a nohref onclick="ICEcoder.goLocalhostRoot()">Localhost</a></li>
-				<li><a nohref onclick="ICEcoder.ftpManager()">FTP</a></li>
-			</ul>
-		</div>
-		//-->
 		<div id="optionsHelp" class="optionsList" onmouseover="ICEcoder.showHideFileNav('show', this.id)" onmouseout="ICEcoder.showHideFileNav('hide', this.id);ICEcoder.canShowFMNav = false">
 			<ul>
 				<li><a nohref onclick="ICEcoder.viewTutorial(false, 500)">Tutorial</a></li>
@@ -314,7 +303,7 @@ if (true === $havePrettier && true === file_exists(dirname(__FILE__) . "/plugins
 		<a nohref onClick="ICEcoder.alphaTabs()"><img src="<?php echo $iceURLPath;?>/assets/images/nav-alpha.png" class="alphaTabs" title="<?php echo $t['Alphabetize tabs'];?>"></a>
 		<?php
 		for ($i = 1; $i <= 100; $i++) {
-			echo '<div id="tab' . $i . '" class="tab" onmousedown="if (false === ICEcoder.overCloseLink) {ICEcoder.switchTab(parseInt(this.id.slice(3), 10)); ICEcoder.tabDragStart(parseInt(this.id.slice(3), 10))}; if (1 === event.button) {ICEcoder.closeTab(parseInt(this.id.slice(3), 10)); return false}; thisColor = ICEcoder.colorSelectedText;" onmouseover="thisColor = this.style.color; this.style.color = ICEcoder.colorSelectedText" onmouseout="this.style.color = thisColor"></div>';
+			echo '<div id="tab' . $i . '" class="tab" onmousedown="if (false === ICEcoder.overCloseLink) {ICEcoder.switchTab(parseInt(this.id.slice(3), 10)); ICEcoder.tabDragStart(parseInt(this.id.slice(3), 10))}; if (1 === event.button) {ICEcoder.closeTab(parseInt(this.id.slice(3), 10)); return false}; thisColor = ICEcoder.colorSelectedText;" onmouseover="thisColor = this.style.color; this.style.color = ICEcoder.colorSelectedText" onmouseout="this.style.color = thisColor" ondblclick="ICEcoder.focusUnfocusTab()"></div>';
 		}
 		?><div class="newTab" onClick="ICEcoder.newTab(false)" id="newTab">+</div>
 	</div>

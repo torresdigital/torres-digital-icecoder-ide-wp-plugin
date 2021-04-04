@@ -726,7 +726,7 @@ var ICEcoder = {
     functionArgsTooltip: function(e, area) {
         let numLintErrors;
 
-        if (this.indexData) {
+        if (this.indexData && this.indexData.functions) {
             // If we have no files open, return early
             if (0 === this.openFiles.length) {
                 get('tooltip').style.display = "none";
@@ -1155,7 +1155,7 @@ var ICEcoder = {
 
     // Go to a specific line number
     goToLine: function(lineNo, charNo, noFocus) {
-        let thisCM;
+        let thisCM, hiddenLines, tgtLineNo;
 
         lineNo = lineNo ? lineNo - 1 : get('goToLineNo').value - 1;
         charNo = charNo ? charNo : 0;
@@ -1164,15 +1164,50 @@ var ICEcoder = {
 
         this.scrollingOnLine = thisCM.getCursor().line;
 
-        // Scroll cursor into middle of view
+        // Clear any existing interval handling the scrolling
         if ("undefined" !== typeof this.scrollInt) {
             clearInterval(this.scrollInt);
         }
 
+        // Start array of hidden (folded away) lines we should ignore
+        hiddenLines = [];
+
+        // Get all marks
+        const allMarks = thisCM.getAllMarks();
+        if ("undefined" !== typeof allMarks[0]) {
+            // For each of the marks, if it's a fold type marker
+            for (let i = 0; i < allMarks.length; i++) {
+                if (true === allMarks[i].__isFold) {
+                    // Get the line number of first child in marker range
+                    const firstLine = thisCM.getLineNumber(allMarks[i].lines[0]);
+                    // For each of the children in marker range, after first (as that's still visible, subsequent lines not)
+                    for (let j = 1; j < allMarks[i].lines.length; j++) {
+                        // If not already in hidden lines array we need to also ignore (this check covers nested folds)
+                        if (-1 === hiddenLines.indexOf(firstLine + j + 1)) {
+                            hiddenLines.push(firstLine + j + 1);
+                        }
+                    }
+                }
+            }
+        }
+
+        // The target line is same as requested line, for now
+        tgtLineNo = lineNo;
+        // Go through each of the lines that are folded away (hidden), if the number is less
+        // than the requested line number, deduct 1 as it's hidden
+        for (let i = 0; i < hiddenLines.length; i++) {
+            if (hiddenLines[i] < lineNo) {
+                tgtLineNo--;
+            }
+        }
+
         this.scrollInt = setInterval(function(ic) {
-            ic.scrollingOnLine = ic.scrollingOnLine + ((lineNo - ic.scrollingOnLine) / 5);
-            thisCM.scrollTo(0, (thisCM.defaultTextHeight() * ic.scrollingOnLine) - (thisCM.getScrollInfo().clientHeight / 10));
-            if (lineNo === Math.round(ic.scrollingOnLine)) {
+            // Aim for this step to go 1/5th towards the target line we want as next scroll "step"
+            ic.scrollingOnLine = ic.scrollingOnLine + ((tgtLineNo - ic.scrollingOnLine) / 5);
+            // Scroll on the Y axis to the pixels in this step + 8 to handle margin - 1/10th of editor visible height
+            thisCM.scrollTo(0, (thisCM.defaultTextHeight() * ic.scrollingOnLine) + 8 - (thisCM.getScrollInfo().clientHeight / 10));
+            // Clear interval if we're at the target line now
+            if (tgtLineNo === Math.round(ic.scrollingOnLine)) {
                 clearInterval(ic.scrollInt);
             }
         }, 10, this);
@@ -1526,6 +1561,7 @@ var ICEcoder = {
               : fileExt === "erl" ? "Erlang"
               : fileExt === "jl" ? "Julia"
               : fileExt === "c" ? "C"
+              : fileExt === "h" ? "C"
               : fileExt === "cpp" ? "C++"
               : fileExt === "ino" ? "C++"
               : fileExt === "cs" ? "C#"
@@ -3163,9 +3199,9 @@ var ICEcoder = {
         farbtastic('picker','color');
         // If we have a color value, set it in picker
         if (color) {
-            // If an RGB value, convert to hex
-            if (-1 < color.indexOf("rgb")) {
-                color = color.replace(/rgb|\(|\)|\s+/g, "").split(",");
+            // If a RGB(A) value, convert to Hex
+            if (-1 < color.toLowerCase().indexOf("rgb")) {
+                color = color.replace(/rgba?|\(|\)|\s+/gi, "").split(",");
                 color = "#" + this.rgbToHex(...color);
             }
             get('picker').farbtastic.setColor(color);
@@ -3263,8 +3299,9 @@ var ICEcoder = {
         }
     },
 
-    // Convert RGB values to Hex
-    rgbToHex: function(r, g, b) {
+    // Convert RGB(A) values to Hex
+    rgbToHex: function(r, g, b, a) {
+        // Ignore alpha, use r, g, b
         return this.toHex(r) + this.toHex(g) + this.toHex(b);
     },
 
@@ -3606,7 +3643,7 @@ var ICEcoder = {
         get('mediaContainer').innerHTML =
             '<iframe src="' +
             this.iceLoc +
-            '/lib/help.php" id="helpIFrame" style="width: 840px; height: 485px"></iframe>';
+            '/lib/help.php" id="helpIFrame" style="width: 840px; height: 495px"></iframe>';
         this.showHide('show', get('blackMask'));
     },
 
@@ -3672,24 +3709,13 @@ var ICEcoder = {
         this.showHide('show', get('blackMask'));
     },
 
-    // Go to localhost root
-    goLocalhostRoot: function() {
-        this.filesFrame.contentWindow.frames['fileControl'].location.href =
-            this.iceLoc +
-            "/lib/go-localhost-root.php";
-    },
-
-    // Show the FTP manager
-    ftpManager: function() {
-        get('mediaContainer').innerHTML = '<iframe src="' +
-            this.iceLoc +
-            '/lib/ftp-manager.php" id="ftpManagerIFrame" style="width: 620px; height: 550px"></iframe>';
-        this.showHide('show', get('blackMask'));
-    },
-
     // Update the settings used when we make a change to them
     useNewSettings: function(settings) {
         let styleNode, thisCSS, strCSS, activeLineBG;
+
+        // Set iceRoot and update in settings display
+        iceRoot = settings.iceRoot;
+        this.content.contentWindow.document.getElementById('iceRootDisplay').innerText = "" !== iceRoot ? iceRoot : "[Default]";
 
         // Cut out path prefix, .css file extension and ?microtime= querystring
         const newTheme = settings.themeURL.replace(/.+\/|.css.+/g, "");
@@ -4637,6 +4663,13 @@ var ICEcoder = {
             // Once done, sort our tabs into new order
             this.sortTabs(alphaArray);
         }
+    },
+
+    // Focus/unfocus tab by contracting/expanding file manager
+    focusUnfocusTab: function() {
+        // Switch current lock state and change display of file manager
+        ICEcoder.lockUnlockNav();
+        this.changeFilesW(true === this.lockedNav ? 'expand' : 'contract');
     },
 
 // ==
