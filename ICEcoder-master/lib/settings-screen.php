@@ -56,12 +56,12 @@ if (true === isset($_GET['tab'])) {
 	<?php
 	// If we have a .git dir, get the Git short commit hash to display as a link
 	$gitCommitTextLink = "";
-	if (is_dir(dirname(__FILE__) . "/../.git")) {
-		$gitCommit = trim(exec('git log --pretty="%h" -n1 HEAD'));
+	if (true === $systemClass->functionEnabled("shell_exec") && is_dir(dirname(__FILE__) . "/../.git")) {
+		$gitCommit = trim(shell_exec('git log --pretty="%h" -n1 HEAD'));
 		$gitCommitTextLink = ' (Git commit: <a href="https://github.com/icecoder/ICEcoder/commit/' . $gitCommit . '" target="_blank">' . $gitCommit . '</a>)';
 	}
 	?>
-	v<?php echo $ICEcoder["versionNo"] . $gitCommitTextLink;?>
+	<?php echo $ICEcoder["versionNo"] . $gitCommitTextLink;?>
 	<br><br>
 
 	<?php echo $t['website'];?>:<br>
@@ -198,7 +198,7 @@ if (true === isset($_GET['tab'])) {
 		<?php
 		// Display number of days backups available
 		$backupDirBase = str_replace("\\", "/", dirname(__FILE__)) . "/../data/backups/";
-		$backupDirHost = true === isset($ftpSite) ? parse_url($ftpSite, PHP_URL_HOST) : "localhost";
+		$backupDirHost = "localhost";
 		$backupDirsList = scandir($backupDirBase . $backupDirHost);
 		// Remove . and .. from array
 		for ($i = 0; $i < count($backupDirsList); $i++) {
@@ -261,11 +261,11 @@ function findSequence(goal) {
 		
 		function getThemeDisplayName($optionName) {
 			$wordCasings = [
-				Ii => "II",
-				Ir => "IR",
-				Mdn => "MDN",
-				Ttcn => "TTCN",
-				Xq => "XQ"
+				"Ii" => "II",
+				"Ir" => "IR",
+				"Mdn" => "MDN",
+				"Ttcn" => "TTCN",
+				"Xq" => "XQ"
 			];
 
 			$optionName = ucwords(preg_replace("/_|\-/", " ", $optionName));
