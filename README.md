@@ -1,7 +1,7 @@
 ## === Torres Digital ICECoder IDE Wordpress Plugin ===
 
 Contributors: Anderson Torres @atorresbr <br/>
-Tags: IP Location, IP Lookup<br/>
+Tags: Icecoder, Torres Digital, ICECoder Wordpress Plugin<br/>
 Requires at least: WordPress 4.4<br/>
 Requires the PHP version: 5.6<br/>
 Tested up to: 5.2.1<br/>
