@@ -31,8 +31,12 @@ Description:  ❉ This plugin allows the ICECoder IDE to be accessed directly th
 
 #### == Screenshots ==
 
-1. Image 01. [amend as relevant]
-2. Image 02. [amend as relevant]
+1. ![Alt Text](https://raw.githubusercontent.com/atorresbr/torres-digital-icecoder-ide-wp-plugin/master/css/img/1.png)
+2. ![Alt Text](https://raw.githubusercontent.com/atorresbr/torres-digital-icecoder-ide-wp-plugin/master/css/img/2.png)
+3. ![Alt Text](https://raw.githubusercontent.com/atorresbr/torres-digital-icecoder-ide-wp-plugin/master/css/img/3.png)
+4. ![Alt Text](https://raw.githubusercontent.com/atorresbr/torres-digital-icecoder-ide-wp-plugin/master/css/img/4.png)
+5. ![Alt Text](https://raw.githubusercontent.com/atorresbr/torres-digital-icecoder-ide-wp-plugin/master/css/img/5.png)
+
 
 #### == Changelog ==
 
@@ -60,6 +64,6 @@ This program is distributed in the hope that it will be useful, but WITHOUT ANY 
 
 You should have received a copy of the GNU General Public License along with this program. If not, see http://www.gnu.org/licenses/
 
-You can contact us at contato@torresdigital.tk
+You can contact us at contato@torresdigital.com.br
 
 ![Alt Text](https://media.giphy.com/media/uJGN9fXkAqgiQ/giphy.gif)
