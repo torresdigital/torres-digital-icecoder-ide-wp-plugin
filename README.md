@@ -31,8 +31,12 @@ Description:  ❉ This plugin allows the ICECoder IDE to be accessed directly th
 
 #### == Screenshots ==
 
-1. Image 01. [amend as relevant]
-2. Image 02. [amend as relevant]
+1. Image 01. ![Alt Text](https://repository-images.githubusercontent.com/203066618/9c9f0800-c1ff-11e9-91d2-8ec68f399bf8)
+2. Image 02. ![Alt Text](https://repository-images.githubusercontent.com/203066618/9c9f0800-c1ff-11e9-91d2-8ec68f399bf8)
+3. Image 03. ![Alt Text](https://repository-images.githubusercontent.com/203066618/9c9f0800-c1ff-11e9-91d2-8ec68f399bf8)
+4. Image 04. ![Alt Text](https://repository-images.githubusercontent.com/203066618/9c9f0800-c1ff-11e9-91d2-8ec68f399bf8)
+5. Image 05. ![Alt Text](https://repository-images.githubusercontent.com/203066618/9c9f0800-c1ff-11e9-91d2-8ec68f399bf8)
+
 
 #### == Changelog ==
 
@@ -60,6 +64,6 @@ This program is distributed in the hope that it will be useful, but WITHOUT ANY 
 
 You should have received a copy of the GNU General Public License along with this program. If not, see http://www.gnu.org/licenses/
 
-You can contact us at contato@torresdigital.tk
+You can contact us at contato@torresdigital.com.br
 
 ![Alt Text](https://media.giphy.com/media/uJGN9fXkAqgiQ/giphy.gif)
