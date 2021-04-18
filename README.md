@@ -31,11 +31,11 @@ Description:  ❉ This plugin allows the ICECoder IDE to be accessed directly th
 
 #### == Screenshots ==
 
-1. Image 01. ![Alt Text](https://raw.githubusercontent.com/atorresbr/torres-digital-icecoder-ide-wp-plugin/master/css/img/1.png)
-2. Image 02. ![Alt Text](https://raw.githubusercontent.com/atorresbr/torres-digital-icecoder-ide-wp-plugin/master/css/img/2.png)
-3. Image 03. ![Alt Text](https://raw.githubusercontent.com/atorresbr/torres-digital-icecoder-ide-wp-plugin/master/css/img/3.png)
-4. Image 04. ![Alt Text](https://raw.githubusercontent.com/atorresbr/torres-digital-icecoder-ide-wp-plugin/master/css/img/4.png)
-5. Image 05. ![Alt Text](https://raw.githubusercontent.com/atorresbr/torres-digital-icecoder-ide-wp-plugin/master/css/img/5.png)
+1. ![Alt Text](https://raw.githubusercontent.com/atorresbr/torres-digital-icecoder-ide-wp-plugin/master/css/img/1.png)
+2. ![Alt Text](https://raw.githubusercontent.com/atorresbr/torres-digital-icecoder-ide-wp-plugin/master/css/img/2.png)
+3. ![Alt Text](https://raw.githubusercontent.com/atorresbr/torres-digital-icecoder-ide-wp-plugin/master/css/img/3.png)
+4. ![Alt Text](https://raw.githubusercontent.com/atorresbr/torres-digital-icecoder-ide-wp-plugin/master/css/img/4.png)
+5. ![Alt Text](https://raw.githubusercontent.com/atorresbr/torres-digital-icecoder-ide-wp-plugin/master/css/img/5.png)
 
 
 #### == Changelog ==
