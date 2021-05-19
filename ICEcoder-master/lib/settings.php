@@ -27,7 +27,7 @@ if (false === $settingsClass->getDataDirDetails()['writable']) {
 // Create a new global config file if it doesn't exist yet.
 // The reason we create it, is so it has PHP write permissions, meaning we can update it later
 if (false === $settingsClass->getConfigGlobalFileDetails()['exists']) {
-    if (false === $settingsClass->setConfigGlobalSettings($settingsClass->getConfigGlobalTemplate(false))) {
+    if (false === $settingsClass->setConfigGlobalSettings($settingsClass->getConfigGlobalTemplate())) {
         $reqsFailures = ["phpGlobalConfigFileCreate"];
         include dirname(__FILE__) . "/requirements.php";
     }
@@ -68,7 +68,7 @@ $setPWorLogin = "login";
 
 // Create user settings file if it doesn't exist
 if (true === $ICEcoderSettings['enableRegistration'] && false === $settingsClass->getConfigUsersFileDetails($settingsFile)['exists']) {
-    if (false === $settingsClass->setConfigUsersSettings($settingsFile, $settingsClass->getConfigUsersTemplate(false))) {
+    if (false === $settingsClass->setConfigUsersSettings($settingsFile, $settingsClass->getConfigUsersTemplate())) {
         $reqsFailures = ["phpUsersConfigCreateConfig"];
         include dirname(__FILE__) . "/requirements.php";
     }
@@ -114,13 +114,8 @@ If ($ICEcoderUserSettings["versionNo"] !== $ICEcoderSettings["versionNo"]) {
     include dirname(__FILE__) . "/requirements.php";
 }
 
-// Set ICEcoder settings array to (global + user) template and layer ontop (global + user) from current settings
-$ICEcoder = array_merge(
-    $settingsClass->getConfigGlobalTemplate(true),
-    $settingsClass->getConfigUsersTemplate(true),
-    $ICEcoderSettings,
-    $ICEcoderUserSettings
-);
+// Join ICEcoder global config settings and user config settings together to make our final ICEcoder array
+$ICEcoder = $ICEcoderSettings + $ICEcoderUserSettings;
 
 // Include language file
 // Load base first as foundation
@@ -132,8 +127,8 @@ include dirname(__FILE__) . "/../lang/" . basename($ICEcoder['languageUser']);
 $text = array_replace_recursive($baseText, $text);
 $_SESSION['text'] = $text;
 
-// Login not required, log us straight in
-if (false === $ICEcoder['loginRequired']) {
+// Login not required or we're in demo mode and have password set in our settings, log us straight in
+if ((false === $ICEcoder['loginRequired'] || true === $ICEcoder['demoMode']) && "" !== $ICEcoder['password']) {
     $_SESSION['loggedIn'] = true;
 };
 $demoMode = $ICEcoder['demoMode'];
@@ -199,8 +194,8 @@ include(dirname(__FILE__) . "/settings-save-current-files.php");
 // Display the plugins
 include(dirname(__FILE__) . "/plugins-display.php");
 
-// If we require a login, loggedIn is false or we don't have a password set yet and we're not on login screen, boot user to that
-if (true === $ICEcoder['loginRequired'] && false === isset($_POST['password']) && (!$_SESSION['loggedIn'] || "" === $ICEcoder["password"]) && false === strpos($_SERVER['SCRIPT_NAME'], "lib/login.php")) {
+// If loggedIn is false or we don't have a password set yet and we're not on login screen, boot user to that
+if (false === isset($_POST['password']) && (!$_SESSION['loggedIn'] || "" === $ICEcoder["password"]) && false === strpos($_SERVER['SCRIPT_NAME'], "lib/login.php")) {
     if (file_exists('lib/login.php')) {
         header('Location: ' . rtrim($_SERVER['REQUEST_URI'], "/") . '/lib/login.php');
         echo "<script>window.location = 'lib/login.php';</script>";

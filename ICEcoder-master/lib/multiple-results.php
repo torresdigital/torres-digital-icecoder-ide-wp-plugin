@@ -48,27 +48,24 @@ if (true === isset($_GET['target']) && false !== strpos($_GET['target'], "filena
     let foundInSelected = false;
     const userTarget = parent.document.findAndReplace.target.value;
     const findText = parent.document.findAndReplace.find.value;
-    const rExp = new RegExp(true === parent.ICEcoder.findRegex ? findText : parent.ICEcoder.escapeRegex(findText), "gi");
     <?php
     $findText = str_replace("ICEcoder:", "", str_replace("&#39;", "\'", $_GET['find']));
     // Find in open docs?
-    // TODO: This doesn't actually replace if using regex, it doesn't error - tabs show a change, but nothing replaced
     if (false === isset($_GET['target'])) {
         $targetName = $t['document'];
         ?>
         let startTab = parent.ICEcoder.selectedTab;
-        
+        const rExp = new RegExp(findText, "gi");
         for (let i = 1; i <= parent.ICEcoder.openFiles.length; i++) {
             parent.ICEcoder.switchTab(i);
             const cM = parent.ICEcoder.getcMInstance();
-            const selectNext = true;
-            rData = parent.ICEcoder.findInCMContent(cM, rExp, selectNext);
-            if (0 < rData.results.length) {
+            const content = cM.getValue();
+            if (content.match(rExp)) {
                 resultsDisplay +=
                     '<a href="javascript:gotoTab(' + i + '); goFind()">' +
                     parent.ICEcoder.openFiles[i - 1] +
                     '</a><br><div id="foundCount' + i + '"><?php echo $t['Found'];?> ' +
-                    rData.results.length +
+                    content.match(rExp).length +
                     ' <?php echo $t['times'];?></div>';
                 <?php if (isset($_GET['replace'])) { ?>
                 resultsDisplay +=
@@ -82,9 +79,8 @@ if (true === isset($_GET['target']) && false !== strpos($_GET['target'], "filena
             parent.ICEcoder.switchTab(startTab);
         }
         <?php
-    // Find in files or filenames
+        // Find in files or filenames
     } else {
-        // filenames
         if (0 < strpos($_GET['target'], "filenames")) {
         $targetName = $t['file folder'];
         ?>
@@ -92,18 +88,11 @@ if (true === isset($_GET['target']) && false !== strpos($_GET['target'], "filena
         for (let i = 0; i < spansArray.length; i++) {
             let foundInSelected = false;
             const targetURL = spansArray[i].id.replace(/\|/g, "/").toLowerCase();
-            const targetName = targetURL.substring(targetURL.lastIndexOf("/") + 1);
-            let haveMatch = false;
-            while ((match = rExp.exec(targetName)) !== null) {
-                console.log(match);
-                haveMatch = true;
-            }
             if (
-                // TODO: Find in filenames not working with regex, see all instances of findText and $findText below
-                true === haveMatch && -1 < targetURL.indexOf('_perms')) {
+                targetURL.lastIndexOf(findText.toLowerCase()) > targetURL.lastIndexOf("/")
+                && -1 < targetURL.indexOf(findText.toLowerCase()) && targetURL.indexOf('_perms')>-1) {
                 if (-1 < userTarget.indexOf("selected")) {
                     for (let j = 0; j < parent.ICEcoder.selectedFiles.length; j++) {
-                        // TODO: This whole file needs comments - what does the below do?!
                         if (
                             0 === targetURL.replace(/\//g, "|").indexOf(parent.ICEcoder.selectedFiles[j].replace(/\//g, "|").replace(/_perms/g, ""))
                             && (
@@ -121,7 +110,6 @@ if (true === isset($_GET['target']) && false !== strpos($_GET['target'], "filena
                         '\');parent.ICEcoder.goFindAfterOpenInt = setInterval(function(){goFindAfterOpen(\'<?php echo $docRoot;?>' +
                         targetURL.replace(/\|/g, "/").replace(/_perms/g, "") +
                         '\')}, 20);parent.ICEcoder.showHide(\'hide\', parent.document.getElementById(\'blackMask\'))">';
-                    // TODO: get this line working
                     resultsDisplay +=
                         targetURL.replace(/\|/g, "/").replace(/_perms/g, "").replace(/<?php
                             echo str_replace("/", "\/",strtolower($findText)); ?>/g, "<b>" +
@@ -130,7 +118,6 @@ if (true === isset($_GET['target']) && false !== strpos($_GET['target'], "filena
                     <?php if (false === isset($_GET['replace'])) { ?>
                     resultsDisplay += '<div id="foundCount' + i +'">' + spansArray[i].innerHTML + '</div>';
                     <?php ;} else { ?>
-                    // TODO: get this line working
                     resultsDisplay +=
                         '<div id="foundCount' + i + '">' + spansArray[i].innerHTML +
                         ', <?php echo $t['rename to'];?> ' +
@@ -148,7 +135,6 @@ if (true === isset($_GET['target']) && false !== strpos($_GET['target'], "filena
             }
         }
         <?php
-        // files
         } else {
         $targetName = $t['file'];
         $r = 0;
@@ -206,7 +192,6 @@ if (true === isset($_GET['target']) && false !== strpos($_GET['target'], "filena
             return $ret;
         }
 
-        // TODO: consider $findText here, is OK?
         $results = phpGrep($findText, $docRoot . $iceRoot, $docRoot . $iceRoot);
         echo 'resultsDisplay += "' . $results . '";';
         ?>
@@ -252,8 +237,7 @@ if (true === isset($_GET['target']) && false !== strpos($_GET['target'], "filena
     };
 
     const replaceInFileSingle = function(fileRef) {
-        // TODO: findText in this line
-        parent.ICEcoder.replaceInFile(fileRef, true === parent.ICEcoder.findRegex ? findText : parent.ICEcoder.escapeRegex(findText), '<?php if (isset($_GET['replace'])) {echo $_GET['replace'];}; ?>');
+        parent.ICEcoder.replaceInFile(fileRef, findText, '<?php if (isset($_GET['replace'])) {echo $_GET['replace'];}; ?>');
     };
 
     const replaceInFilesAll = function() {
@@ -265,8 +249,7 @@ if (true === isset($_GET['target']) && false !== strpos($_GET['target'], "filena
 
     const renameSingle = function(arrayRef) {
         fileRef = spansArray[arrayRef].id.replace(/\|/g, "/").replace(/_perms/g, "");
-        const rExp = new RegExp(true === parent.ICEcoder.findRegex ? findText : parent.ICEcoder.escapeRegex(findText), "gi");
-        // TODO: get this working
+        const rExp = new RegExp(findText, "gi");
         newName = spansArray[arrayRef].id.replace(/\|/g, "/").replace(/_perms/g, "").replace(rExp, "<?php if (isset($_GET['replace'])) {echo $_GET['replace'];}; ?>");
         parent.ICEcoder.renameFile(fileRef,newName);
     };
@@ -294,7 +277,7 @@ if (true === isset($_GET['target']) && false !== strpos($_GET['target'], "filena
         parent.document.getElementById('results').style.display = 'inline-block';
         // Action the find and then focus on find input box
         setTimeout(function() {
-            parent.ICEcoder.findReplace(true === parent.ICEcoder.findRegex ? findText : parent.ICEcoder.escapeRegex(findText), true, false, false);
+            parent.ICEcoder.findReplace(findText, true, false, false);
             parent.document.getElementById("find").focus();
         }, 0);
     };

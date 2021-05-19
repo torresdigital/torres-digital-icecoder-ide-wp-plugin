@@ -1,15 +1,6 @@
 <?php
 include "headers.php";
 include "settings.php";
-
-// Redirect up 2 dirs to get into ICEcoder (useful if we changed setting and refresh)
-if (false === $ICEcoder['loginRequired']) {
-	$tgtDir = dirname(dirname($_SERVER['REQUEST_URI']));
-	header('Location: ' . $tgtDir);
-	echo "<script>window.location = '" . $tgtDir . "';</script>";
-	exit;
-}
-
 $t = $text['login'];
 
 $settingPW = $ICEcoder["enableRegistration"] && ($ICEcoder["multiUser"] || "" === $ICEcoder["password"]);
@@ -36,7 +27,7 @@ echo $settingPW ? "Setup" : "Login";
 	<div class="screenVCenter">
 		<div class="screenCenter">
 		<img src="../assets/images/icecoder.png" alt="ICEcoder">
-		<div class="version" style="margin-bottom: 22px"><?php echo $ICEcoder["versionNo"];?></div>
+		<div class="version" style="margin-bottom: 22px">v<?php echo $ICEcoder["versionNo"];?></div>
 
 		<form name="settingsUpdate" action="login.php" method="POST"<?php if ($settingPW) {?> onsubmit="return checkCanSubmit();"<?php } ?>>
         <?php
@@ -90,10 +81,6 @@ echo $settingPW ? "Setup" : "Login";
 		</div>
 	</div>
 </div>
-
-<?php
-echo $systemClass->getDemoModeIndicator(true);
-?>
 
 <script>
 // Get any elem by ID
