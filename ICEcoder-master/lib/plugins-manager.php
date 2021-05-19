@@ -218,14 +218,8 @@ function deletePlugin($dir) {
         <h2><?php echo $t['Install'] . ' / ' . $t['Uninstall'];?></h2><br>
 
         <?php
-        // ZipArchive plugin not available
-        if (false === class_exists('ZipArchive')) {
-            echo "Sorry, you don't have the ZipArchive class in your PHP installation, or it's not enabled in php.ini.";
-        // Cannot get data? Show error info
-        } elseif (0 === count($pluginsData)) {
-            echo "Sorry, unable to get plugin data. Please make sure you have either curl or fopen available on your server.";
         // Show list of plugins
-        } else {
+        if (0 < count($pluginsData)) {
             ?>
             <table>
                 <?php
@@ -255,6 +249,9 @@ function deletePlugin($dir) {
             </table>
 
             <?php
+            // Cannot get data? Show error info
+        } else {
+            die("Sorry, unable to get plugin data. Please make sure you have either curl or fopen available on your server.");
         }
         ?>
     </div>
