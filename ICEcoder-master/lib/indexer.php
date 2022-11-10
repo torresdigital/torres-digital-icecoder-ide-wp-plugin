@@ -19,7 +19,7 @@ if (file_exists($docRoot . $ICEcoderDir . "/data/index.php")) {
 }
 
 // Roughly 1 in 100 index runs, we'll do a full index
-if (mt_rand(1,100) === 50) {
+if (mt_rand(1, 100) === 50) {
     $prevIndexData = [];
 }
 
@@ -47,8 +47,18 @@ function phpGrep($path, $base) {
         if (is_dir($filePath)) {
             $ret .= phpGrep($filePath, $base);
         } else {
-            // Check if we should scan within this file, by only considering files that may contain functions & classes
+            // Check if we should scan within this file, by only considering files that may contain functions & classes...
+            // Must be in the indexableFileExts list
             if (false === in_array($filePathExt, $indexableFileExts)) {
+                continue;
+            }
+            $finfo = "text";
+            // Must have a MIME type string starting with "text" (also avoids "empty" files)
+            if (function_exists('finfo_open')) {
+                $finfoMIME = finfo_open(FILEINFO_MIME);
+                $finfo = finfo_file($finfoMIME, $filePath);
+            }
+            if (0 !== strpos($finfo, "text")) {
                 continue;
             }
             // Check if file appears to be the same (same size and mtime), if so, continue as we'll assume it's not changed
@@ -119,6 +129,11 @@ function phpGrep($path, $base) {
                         $functionArgs = str_replace('=', ' = ', $functionArgs);
                         $functionArgs = preg_replace('/\s+/', ' ', $functionArgs);
 
+                        // Limit function args list to 200 char max
+                        if (strlen($functionArgs) > 200) {
+                            $functionArgs = substr($functionArgs, 0, 200) . "...)";
+                        }
+
                         // Finally, we have our function name and args
                         $functionText = [
                             0 => $functionName,
@@ -184,6 +199,7 @@ function phpGrep($path, $base) {
             }
         }
     }
+    closedir($fp);
     return $ret;
 }
 

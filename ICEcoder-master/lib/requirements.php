@@ -32,9 +32,9 @@ if (false === empty($reqsFailures)) {
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <meta name="robots" content="noindex, nofollow">
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<link rel="stylesheet" type="text/css" href="../assets/css/resets.css?microtime=<?php echo microtime(true);?>">
-<link rel="stylesheet" type="text/css" href="../assets/css/icecoder.css?microtime=<?php echo microtime(true);?>">
-<link rel="icon" type="image/png" href="../assets/images/favicon.png">
+<link rel="stylesheet" type="text/css" href="<?php echo $settingsClass->assetsRoot;?>/css/resets.css?microtime=<?php echo microtime(true);?>">
+<link rel="stylesheet" type="text/css" href="<?php echo $settingsClass->assetsRoot;?>/css/icecoder.css?microtime=<?php echo microtime(true);?>">
+<link rel="icon" type="image/png" href="<?php echo $settingsClass->assetsRoot;?>/images/favicon.png">
 </head>
 
 <body style="background-color: #181817" onLoad="setTimeout(function(){document.getElementById('screenContainer').style.opacity = '1'}, 50)">
@@ -42,8 +42,8 @@ if (false === empty($reqsFailures)) {
 <div class="screenContainer" id="screenContainer" style="background-color: #181817; opacity: 0; transition: opacity 0.1s ease-out">
 	<div class="screenVCenter">
 		<div class="screenCenter">
-			<img src="../assets/images/icecoder.png" alt="ICEcoder">
-			<div class="version" style="margin-bottom: 22px"> echo $settingsClass->versionNo;?></div>
+			<img src="<?php echo $settingsClass->assetsRoot;?>/images/icecoder.png" alt="ICEcoder">
+			<div class="version" style="margin-bottom: 22px"><?php echo $settingsClass->versionNo;?></div>
 
 			<span style="display: inline-block; color: #fff">
 		        	<b style="padding: 5px; background: #b00; color: #fff">Requirements problem!</b><br><br><br><br>

@@ -10,8 +10,9 @@ var ICEcoder = {
     // INIT
     // ====
 
-    // URL we're viewing ICEcoder from
+    // URLs we're viewing ICEcoder and its assets from
     iceLoc:                window.location.origin + window.location.pathname.replace(/\/$/, ""),
+    assetsLoc:              get('icecoderJSFile').dataset.assetsRoot,
 
     // Define settings
     filesW:	               250,           // Width of files pane
@@ -31,6 +32,8 @@ var ICEcoder = {
     results:               [],            // Array of find coords (line & char)
     resultsLines:          [],            // Array of lines containing results (simpler version of results)
     findResult:            0,             // Array position of current find in results
+    findRegex:             false,         // If find attempts are done using regex
+    findUpdateMultiInfoID: [],            // ID of multiple results modal elem to update & text, when rename/replace is successful
     scrollbarVisible:      false,         // Indicates if the main pane has a scrollbar
     mouseDown:             false,         // If the mouse is down
     mouseDownInCM:         false,         // If the mouse is down within CodeMirror instance (can be false, 'editor' or 'gutter')
@@ -55,7 +58,7 @@ var ICEcoder = {
     previewWindowLoading:  false,         // Loading state of preview window
     pluginIntervalRefs:    [],            // Array of plugin interval refs
     overPopup:             false,         // Indicates if we're over a popup or not
-    cmdKey:                false,         // Tracking apple Command key up/down state
+    cmdKey:                false,         // Tracking Apple Command key up/down state
     codeZoomedOut:         false,         // If true, code on non declaration lines is zoomed out
     showingTool:           false,         // Which tool is showing right now (terminal, output, database, git etc)
     oppTagReplaceData:     [],            // Will contain data for automatic opposite tag replacement to sync them
@@ -93,8 +96,11 @@ var ICEcoder = {
         // Set layout
         this.setLayout();
 
+        // State we've over the root dir, enact a selection of it, then state
+        // we're not over it it anymore
         this.overFileFolder('folder', '|');
         this.selectFileFolder('init');
+        this.overFileFolder('folder', '');
         this.filesFrame.contentWindow.focus();
 
         // Hide the loading screen & auto open last files?
@@ -428,16 +434,17 @@ var ICEcoder = {
     },
 
     // On key up
-    cMonKeyUp: function(thisCM, cMinstance) {
-        if (undefined !== typeof this.doFindTimeout) {
-            clearInterval(this.doFindTimeout);
+    cMonKeyUp: function(thisCM, cMinstance, evt) {
+        let key;
+
+        key = evt.keyCode ?? evt.which ?? evt.charCode;
+
+        // Return true (to continue) if we're not CTRL+dragging and
+        // we have CTRL/Cmd key down, or if it's the CTRL key, or Cmd key now up
+        if ("CTRL" !== this.draggingWithKey && (this.ctrlCmdKeyDown(evt) || 17 === key || this.isCmdKey(key))) {
+            return true;
         }
-        // If we have something to find in this document, find in 50 ms (unless cancelled by another keypress)
-        if ("" !== get('find').value && t['this document'] === document.findAndReplace.target.value) {
-            this.doFindTimeout = setTimeout(function (ic) {
-                ic.findReplace(get('find').value, false, false, false);
-            }, 50, this);
-        }
+
         this.setEditorStats();
     },
 
@@ -463,7 +470,7 @@ var ICEcoder = {
             thisCM.replaceRange("", {line: thisCMPrevLine, ch: 0}, {line: thisCMPrevLine, ch: 1000000}, "+input");
         }
 
-        // Set the cursor to text height, not line height
+        // Set the cursor to text height, not line height and update any old highlighted results message
         setTimeout(function(ic) {
             let paneMatch;
 
@@ -487,6 +494,11 @@ var ICEcoder = {
                     thisCM.setOption("cursorHeight", 1);
                 }
 
+            }
+
+            // If we have no selection but still have highlighted result message, run updateResultsDisplay
+            if ("" === thisCM.getSelection() && 0 === get('results').innerHTML.indexOf("Highlighted result")) {
+                ic.updateResultsDisplay('show');
             }
         }, 0, this);
     },
@@ -607,6 +619,17 @@ var ICEcoder = {
         // Highlight Git diff colors in gutter
         if (this.indexData) {
             this.highlightGitDiffs();
+        }
+
+        // Clear any previous doFindTimeout var
+        if (undefined !== typeof this.doFindTimeout) {
+            clearInterval(this.doFindTimeout);
+        }
+        // If we have something to find in this document, find in 50 ms (unless cancelled by another keypress)
+        if ("" !== get('find').value && t['this document'] === document.findAndReplace.target.value) {
+            this.doFindTimeout = setTimeout(function (ic) {
+                ic.findReplace(get('find').value, false, false, false);
+            }, 50, this);
         }
 
         // Update HTML edited files live
@@ -760,7 +783,7 @@ var ICEcoder = {
             // If we have a single result and the mouse pointer is not over the definition of it (that would be pointless), show tooltip
             if (1 === numResults && -1 === [null, "def"].indexOf(cM.getTokenTypeAt(coordsChar))) {
                 get('tooltip').style.display = "block";
-                get('tooltip').style.left = (this.mouseX - this.maxFilesW + 10) + "px";
+                get('tooltip').style.left = (this.mouseX + 10) + "px";
                 numLintErrors = this.content.contentWindow.document.getElementsByClassName("CodeMirror-lint-tooltip")[0];
                 numLintErrors = numLintErrors && numLintErrors.childNodes
                     ? numLintErrors.childNodes.length
@@ -770,7 +793,11 @@ var ICEcoder = {
                     ? 18 * numLintErrors
                     : 0)
                 ) + "px";
-                get('tooltip').style.zIndex = "1";
+                get('tooltip').style.zIndex = 1000;
+                // Limit function args list to 200 char max
+                if (result.params.length > 200) {
+                    result.params = result.params.substr(0, 200) + "...)";
+                }
                 get('tooltip').innerHTML = result.params;
                 // Else hide it
             } else {
@@ -1157,6 +1184,11 @@ var ICEcoder = {
     goToLine: function(lineNo, charNo, noFocus) {
         let thisCM, hiddenLines, tgtLineNo;
 
+        // Return early if trying to find line and no files open
+        if (0 === this.openFiles.length) {
+            return false;
+        }
+
         lineNo = lineNo ? lineNo - 1 : get('goToLineNo').value - 1;
         charNo = charNo ? charNo : 0;
 
@@ -1203,7 +1235,8 @@ var ICEcoder = {
 
         this.scrollInt = setInterval(function(ic) {
             // Aim for this step to go 1/5th towards the target line we want as next scroll "step"
-            ic.scrollingOnLine = ic.scrollingOnLine + ((tgtLineNo - ic.scrollingOnLine) / 5);
+            // 1 = instant, 20 = very slow
+            ic.scrollingOnLine = ic.scrollingOnLine + ((tgtLineNo - ic.scrollingOnLine) / ICEcoder.goToLineScrollSpeed);
             // Scroll on the Y axis to the pixels in this step + 8 to handle margin - 1/10th of editor visible height
             thisCM.scrollTo(0, (thisCM.defaultTextHeight() * ic.scrollingOnLine) + 8 - (thisCM.getScrollInfo().clientHeight / 10));
             // Clear interval if we're at the target line now
@@ -1964,19 +1997,31 @@ var ICEcoder = {
         const re = /^([^ ]*)\s+(on\s+)?(line\s+)?(\d+)/;
         const reMatch = re.exec(fileLink);
 
+        // "on" or "line" word used followed by line number
         if (null !== reMatch) {
             line = reMatch[4];
             fileLink = reMatch[1];
-        } else if (fileLink.indexOf('://') > 0){
+        // :// protocol host separator used
+        } else if (fileLink.indexOf('://') > 0) {
+            // We have a : then number (and : not same index as ://)
             if (fileLink.lastIndexOf(':') !== fileLink.indexOf('://')) {
                 line = fileLink.split(':')[2];
-                fileLink = fileLink.substr(0,fileLink.lastIndexOf(":"));
+                fileLink = fileLink.substr(0, fileLink.lastIndexOf(":"));
             }
-        } else if (fileLink.indexOf(':') > 0){
+        // :/ drive path separator used, likely Windows
+        } else if (fileLink.indexOf(':/') > 0) {
+            // We have a : then number (and : not same index as :/)
+            if (fileLink.lastIndexOf(':') !== fileLink.indexOf(':/')) {
+                line = fileLink.split(':')[2];
+                fileLink = fileLink.substr(0, fileLink.lastIndexOf(":"));
+            }
+        // We have a :
+        } else if (fileLink.indexOf(':') > 0) {
             line = fileLink.split(':')[1];
             fileLink = fileLink.split(':')[0];
         }
-        if ((fileLink.indexOf('(') > 0) && (fileLink.indexOf(')') > 0)){
+        // () Brackets used
+        if ((fileLink.indexOf('(') > 0) && (fileLink.indexOf(')') > 0)) {
             line = fileLink.split('(')[1].split(')')[0];
             fileLink = fileLink.split('(')[0];
         }
@@ -2719,19 +2764,9 @@ var ICEcoder = {
         }
     },
 
-    // Detect CTRL/Cmd key whilst dragging files
+    // Detect CTRL/Cmd key down whilst dragging files
     draggingWithKeyTest: function(evt) {
-        let key;
-
-        key = evt.keyCode ?? evt.which ?? evt.charCode;
-        key = parseInt(key, 10);
-
-        // Mac command key handling (224 = Moz, 91/93 = Webkit Left/Right Apple)
-        if (-1 < [224, 91, 93].indexOf(key)) {
-            this.cmdKey = true;
-        }
-
-        this.draggingWithKey = evt.ctrlKey || this.cmdKey ? "CTRL" : false;
+        this.draggingWithKey = this.ctrlCmdKeyDown(evt) ? "CTRL" : false;
     },
 
     // Add default drag data (dragging in Firefox on DOM elems not possible otherwise)
@@ -2773,6 +2808,7 @@ var ICEcoder = {
         if ('files' === this.area) {
             setTimeout(function(ic) {
                 tgtPath = "folder" === ic.thisFileFolderType ? ic.thisFileFolderLink : ic.thisFileFolderLink.substr(0, ic.thisFileFolderLink.lastIndexOf("|"));
+                if ("" === tgtPath) {tgtPath = "|";}
                 if("CTRL" === ic.draggingWithKey) {
                     ic.copyFiles(ic.selectedFiles);
                     ic.pasteFiles(tgtPath);
@@ -2781,7 +2817,7 @@ var ICEcoder = {
                     this.filesFrame.contentWindow.document.getElementById(tgtPath.replace(/\//g, "|")).style.background = '';
                     // If the tgtPath is not the root, postfix the path with a pipe
                     if ("|" !== tgtPath) {tgtPath += "|"};
-                    ic.moveFile(filePath,tgtPath.replace(/\|/g, "/") + fileName);
+                    ic.moveFile(filePath, tgtPath.replace(/\|/g, "/") + fileName);
                 }
             }, 4, this);
         }
@@ -2793,6 +2829,67 @@ var ICEcoder = {
 // FIND & REPLACE
 // ==============
 
+    // Backslash escape regex special chars in string
+    escapeRegex: function(string) {
+        // $& means the whole matched string
+        return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    },
+
+    // Test an input for balanced regex brackets
+    regexIsBalanced: function(input) {
+        const brackets = "[]{}()";
+        const bracketsSlash = brackets + "\\";
+        let stack = [];
+        let remainder = "";
+
+        // Remove backslash escaped brackets & slashes before testing
+        for (let i = 0; i < bracketsSlash.length; i++) {
+            input = input.replace(new RegExp('\\\\\\' + bracketsSlash[i], 'g'), 'ICECODERC' + i)
+        }
+
+        // Go thru each char in input
+        for (let char of input) {
+            // Find index of this char in brackets string
+            let bracketsIndex = brackets.indexOf(char)
+
+            // Not one of the bracket chars, continue to next char
+            if (bracketsIndex === -1) {
+                remainder += char;
+                continue;
+            }
+
+            // If a bracket start: [ { ( push closing bracket onto stack
+            if (bracketsIndex % 2 === 0) {
+              stack.push(bracketsIndex + 1)
+            } else {
+                // When popping brackets off the stack, compare and return false if not matching
+                if (stack.pop() !== bracketsIndex) {
+                  return false;
+                }
+            }
+        }
+
+        // Replace backslash escaped brackets & slashes
+        for (let i = 0; i < bracketsSlash.length; i++) {
+            remainder = remainder.replace(new RegExp('ICECODERC' + i, 'g'), '\\' + bracketsSlash[i])
+        }
+
+        // If we have items left on our stack, we have an unbalanced input
+        return {
+            "balanced" : stack.length === 0,
+            "remainder" : remainder
+        };
+    },
+
+    // Toggle on/off regex matching during find
+    findRegexToggle: function() {
+        // Toggle to opposite bool value and set background according to value
+        this.findRegex = !this.findRegex;
+        get('findRegexToggle').style.background = true === this.findRegex ? "#49d" : "";
+        // Find again now we've changed regex option state
+        ICEcoder.findReplace(get('find').value, true, false, false);
+    },
+
     // Update find & replace options based on user selection
     findReplaceOptions: function() {
         get('rText').style.display =
@@ -2802,92 +2899,94 @@ var ICEcoder = {
                         ? "inline-block" : "none";
     },
 
-    findReplaceOnInput: function() {
-        // Realtime finding - only action for finding/replacing in current doc
+    findOnInput: function() {
+    	let thisCM, selectNext;
+        // Realtime finding - only action for finding in current doc
         if ("" !== get('find').value && t['this document'] === document.findAndReplace.target.value) {
-            ICEcoder.findReplace(get('find').value, true, false, false);
+            // Get CM pane
+            thisCM = this.getThisCM();
+            // Consider selecting next on value input, according to not having result selected already and user setting
+            selectNext = thisCM.getSelection() !== get('find').value && true === ICEcoder.selectNextOnFindInput;
+            ICEcoder.findReplace(get('find').value, selectNext, false, false);
             get("find").focus();
-            return false;
+        // Reset results display
+        } else {
+            ICEcoder.findReplace(get('find').value, false, false, false);
         }
     },
 
     // Find & replace text according to user selections
     findReplace: function(find, selectNext, canActionChanges, findPrevious) {
-        let replace, results, thisCM, avgBlockH, addPadding, rBlocks, haveMatch, blockColor, replaceQS, targetQS, filesQS;
+        let replace, results, rExp, thisCM, thisSelection, rBlocks, rExpMatch0String, replaceQS, targetQS, filesQS, currRBlock;
 
-        // Determine our find rExp, replace value and results display
-        const rExp = new RegExp(find.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&'), "gi");
+        // Get our replace value and results display
         replace		= get('replace').value;
         results		= get('results');
+
+        // If we're finding with regex and have a problem with it, highlight find box red and return, avoids CPU crash
+        if (true === parent.ICEcoder.findRegex) {
+            const balancedInfo = this.regexIsBalanced(find); 
+
+            // Turn input box red if empty, or no balancedInfo data, or we have unbalanced bracket pairs, or the remainder
+            // is empty aside from brackets, or find or only has ^ or $ or .*
+            if ("" !== find && (
+                false === balancedInfo ||
+                false === balancedInfo['balanced'] ||
+                ("" === balancedInfo['remainder'].replace(/\[\]\{\}\(\)/g, "")) ||
+                "" === find.replace(/\^|\$|\.\*/g, "")
+            )) {
+                this.clearResultsDisplays();
+                get('find').style.background = "#800";
+                return false;
+            } else {
+                get('find').style.background = "";
+            }
+        }
+
+        // Determine our find rExp, inside a try/catch incase there's an uncaught issue with format
+        try {
+             rExp = new RegExp(true === parent.ICEcoder.findRegex ? find : ICEcoder.escapeRegex(find), "gi");
+        } catch(e) {
+            return false;
+        }
 
         // Get CM pane
         thisCM = this.getThisCM();
 
+        // Finding in this document only
         if (thisCM && 0 < find.length && t['this document'] === document.findAndReplace.target.value) {
+            // Get this selection, either as regex escaped version or regular, for comparisons
+            thisSelection = true === parent.ICEcoder.findRegex ? ICEcoder.escapeRegex(thisCM.getSelection()) : thisCM.getSelection();
+
             // Replacing?
             if (t['and'] === document.findAndReplace.connector.value && true === canActionChanges) {
                 // Find & replace the next instance, or all?
-                if (t['replace'] === document.findAndReplace.replaceAction.value && thisCM.getSelection().toLowerCase() === find.toLowerCase()) {
+                if (t['replace'] === document.findAndReplace.replaceAction.value && thisSelection.toLowerCase() === find.toLowerCase()) {
                     thisCM.replaceSelection(replace, "around");
                 } else if (t['replace all'] === document.findAndReplace.replaceAction.value) {
                     thisCM.setValue(thisCM.getValue().replace(rExp, replace));
                 }
             }
 
-            // Set results, resultsLines and findResult back to defaults
-            this.results = [];
-            this.resultsLines = [];
-            this.findResult = 0;
-
-            // Start new iterators for line & last line
-            let i = 0;
-            let lastLine = -1;
-
-            // Get lineNum and chNum from cursor
-            const lineNum = thisCM.getCursor(true === selectNext ? "anchor" : "head").line + 1;
-            const chNum = thisCM.getCursor(true === selectNext ? "anchor" : "head").ch;
-
-            // Work out the avg block is either line height or fraction of space available
-            avgBlockH = !this.scrollBarVisible ? thisCM.defaultTextHeight() : parseInt(this.content.style.height, 10) / thisCM.lineCount();
-
-            // Need to add padding if there's no scrollbar, so current line highlighting lines up with it
-            addPadding = !this.scrollBarVisible ? thisCM.heightAtLine(0) : 0;
-
-            // Result blocks string empty to start, ready to hold DOM elems to show in results bar
-            rBlocks = "";
-
             // Start looking for results
-            thisCM.eachLine(function(line) {
-                i++;
-                haveMatch = false;
-                // If we have matches for our regex for this line
-                while ((match = rExp.exec(line.text)) !== null) {
-                    haveMatch = true;
-                    // Not the same as last line, add to resultsLines
-                    if (lastLine !== i) {
-                        ICEcoder.resultsLines.push(match.index);
-                        lastLine = i;
-                    }
-                    // If the line containing a result is less than than the cursors line or
-                    // if the character position of the match is less than the cursor position, increment findResult
-                    if (i < lineNum || (i === lineNum && match.index < chNum)) {
-                        ICEcoder.findResult++;
-                    }
-                    // Push the line & char position coords into results
-                    ICEcoder.results.push([i, match.index]);
-                }
-                // If the avg block height for results in results bar is above 0.5 pixels high, we can add a DOM elem
-                if (0.5 <= avgBlockH) {
-                    // Red for current line, grey for another line, transparent if no match
-                    blockColor = haveMatch ? thisCM.getCursor().line + 1 == i ? "rgba(192,0,0,0.3)" : "rgba(128,128,128,0.3)" : "transparent";
-                    // Add the DOM elem into our rBlocks string
-                    rBlocks += '<div style="position: absolute; display: block; width: 12px; height:' + avgBlockH + 'px; background: ' + blockColor + '; top: ' + parseInt((avgBlockH * (i - 1)) + addPadding, 10) + 'px"></div>';
-                }
-            });
+            rData = ICEcoder.findInCMContent(thisCM, rExp, selectNext);
+
+            // Set results, resultsLines and findResult plus rBlocks which shows DOM elems in results bar
+            // and rExpMatch0String which is the matching string used to set correct selection length
+            this.results = rData.results;
+            this.resultsLines = rData.resultsLines;
+            this.findResult = rData.findResult;
+            rBlocks = rData.rBlocks;
+            rExpMatch0String = rData.rExpMatch0String;
 
             // Increment findResult one more if our selection is what we want to find and we want to find next
-            if (find.toLowerCase() === thisCM.getSelection().toLowerCase() && false === findPrevious) {
-                ICEcoder.findResult++;
+            // but we're not replacing (replacing removes from array so should not increment thru array index also)
+            if (
+                find.toLowerCase() === thisSelection.toLowerCase() &&
+                false === findPrevious &&
+                (t['and'] !== document.findAndReplace.connector.value || false === canActionChanges)
+            ) {
+                this.findResult++;
             }
 
             if (findPrevious) {
@@ -2896,8 +2995,7 @@ var ICEcoder = {
             }
 
             // If we have results
-            if (this.results.length>0) {
-
+            if (this.results.length > 0) {
                 // Show results only
                 if (false === selectNext) {
                     results.innerHTML = this.results.length + " results";
@@ -2926,7 +3024,7 @@ var ICEcoder = {
                     // Finally, highlight our selection and focus on CM pane
                     thisCM.setSelection(
                         {"line": this.results[this.findResult][0]-1, "ch": this.results[this.findResult][1]},
-                        {"line": this.results[this.findResult][0]-1, "ch": this.results[this.findResult][1] + find.length}
+                        {"line": this.results[this.findResult][0]-1, "ch": this.results[this.findResult][1] + rExpMatch0String.length}
                     );
                     this.focus();
                 }
@@ -2935,15 +3033,16 @@ var ICEcoder = {
                 this.content.contentWindow.document.getElementById('resultsBar').innerHTML = rBlocks;
                 this.content.contentWindow.document.getElementById('resultsBar').style.display = "inline-block";
 
+                // Mark the currRBlock (result for current line) in red
+                currRBlock = this.content.contentWindow.document.getElementById('rBlock' + (thisCM.getCursor().line + 1));
+                if (currRBlock) {
+                    currRBlock.style.background = "#06c";
+                }
+
                 return true;
 
             } else {
-                results.innerHTML = "No results";
-                this.content.contentWindow.document.getElementById('resultsBar').innerHTML = "";
-                this.content.contentWindow.document.getElementById('resultsBar').style.display = "none";
-
-                // Clear our selection and so also the match highlights
-                thisCM.setCursor(thisCM.getCursor("anchor"));
+                this.clearResultsDisplays();
 
                 return false;
             }
@@ -2983,13 +3082,88 @@ var ICEcoder = {
                     '" id="multipleResultsIFrame" style="width: 700px; height: 500px"></iframe>';
             // We have nothing to search for, blank it all out
             } else {
-                results.innerHTML = "No results";
-                this.content.contentWindow.document.getElementById('resultsBar').innerHTML = "";
-                this.content.contentWindow.document.getElementById('resultsBar').style.display = "none";
-
-                // Clear our selection and so also the match highlights
-                thisCM.setCursor(thisCM.getCursor("anchor"));
+                this.clearResultsDisplays();
             }
+        }
+    },
+
+    clearResultsDisplays: function() {
+        results.innerHTML = this.openFiles.length > 0 ? "No results" : "";
+        this.content.contentWindow.document.getElementById('resultsBar').innerHTML = "";
+        this.content.contentWindow.document.getElementById('resultsBar').style.display = "none";
+    },
+
+    findInCMContent: function(thisCM, rExp, selectNext) {
+        let avgBlockH, addPadding, rBlocks, haveMatch, rExpMatch0String, rBlockTop, lastRBlockTop;
+
+        // Start new iterators for line & last line
+        let i = 0;
+        let lastLine = -1;
+
+        // Set results, resultsLines and findResult to defaults
+        let results = [];
+        let resultsLines = [];
+        let findResult = 0;
+
+        // Get lineNum and chNum from cursor
+        const lineNum = thisCM.getCursor(true === selectNext ? "anchor" : "head").line + 1;
+        const chNum = thisCM.getCursor(true === selectNext ? "anchor" : "head").ch;
+
+        // Work out the avg block - is either line height or fraction of space available, but a min of 1px
+        avgBlockH = Math.max(1, !this.scrollBarVisible ? thisCM.defaultTextHeight() : parseInt(this.content.style.height, 10) / thisCM.lineCount());
+
+        // Need to add padding if there's no scrollbar, so current line highlighting lines up with it
+        addPadding = !this.scrollBarVisible ? thisCM.heightAtLine(0) : 0;
+
+        // Result blocks string empty to start, ready to hold DOM elems to show in results bar
+        rBlocks = "";
+
+        rExpMatch0String = "";
+        lastRBlockTop = 0;
+
+        thisCM.eachLine(function(line) {
+            i++;
+            haveMatch = false;
+            // If we have matches for our regex for this line
+            while ((match = rExp.exec(line.text)) !== null) {
+                // rBlockTop is either:
+                // - the default text height (if no scrollbar), or
+                // - screen height divided by num lines (if scrollbar)
+                // multiply whichever by the line number, plus add padding
+                rBlockTop = parseInt(((
+                    !ICEcoder.scrollBarVisible
+                    ? thisCM.defaultTextHeight()
+                    : parseInt(this.content.style.height, 10) / thisCM.lineCount())
+                * (i - 1)) + addPadding, 10);
+
+                rExpMatch0String = match[0];
+                haveMatch = true;
+                // Not the same as last line, add to resultsLines
+                if (lastLine !== i) {
+                    resultsLines.push(match.index);
+                    lastLine = i;
+                }
+                // If the line containing a result is less than than the cursors line or
+                // if the character position of the match is less than the cursor position, increment findResult
+                if (i < lineNum || (i === lineNum && match.index < chNum)) {
+                    findResult++;
+                }
+                // Push the line & char position coords into results
+                results.push([i, match.index]);
+            }
+            // If we have a match, add the DOM elem into our rBlocks string
+            if (true === haveMatch && rBlockTop !== lastRBlockTop) {
+                rBlocks += '<div class="rBlock" style="height:' + avgBlockH + 'px; top: ' + rBlockTop + 'px" id="rBlock' + i +'"></div>';
+                lastRBlockTop = rBlockTop;
+            }
+        });
+
+        return {
+            "results": results,
+            "resultsLines": resultsLines,
+            "findResult": findResult,
+            "rBlocks": rBlocks,
+            "rExpMatch0String": rExpMatch0String
         }
     },
 
@@ -3490,8 +3664,15 @@ var ICEcoder = {
                                 console.log(statusObj);
                                 ICEcoder.serverMessage();
                                 ICEcoder.serverQueue('del');
+                            // Successful, process the requested action to take now
                             } else {
                                 eval(statusObj.action.doNext);
+                                // If we need to update the multiple results pane with new info now a task is done successfully
+                                if (ICEcoder.findUpdateMultiInfoID[0]) {
+                                    get('multipleResultsIFrame').contentWindow.document.getElementById(ICEcoder.findUpdateMultiInfoID[0])
+                                        .innerHTML = ICEcoder.findUpdateMultiInfoID[1];
+                                    ICEcoder.findUpdateMultiInfoID = [];
+                                }
                             }
                             // Some other response? Display a message about that
                         } else {
@@ -3711,7 +3892,9 @@ var ICEcoder = {
 
     // Update the settings used when we make a change to them
     useNewSettings: function(settings) {
-        let styleNode, thisCSS, strCSS, activeLineBG;
+        let styleNode, thisCSS, strCSS, activeLineBG, activeLineNum;
+        const lightThemes = ["base16-light", "chrome-devtools", "duotone-light", "eclipse", "eiffel", "elegant", "mdn-like", "idle", "iplastic", "ir_white", "johnny", "juicy", "neat", "neo", "solarized", "ttcn", "xq-light"];
+        const darkThemes = ["3024-night", "all-hallow-eve", "black-pearl-ii", "blackboard", "colorforth", "django", "emacs-strict", "fade-to-grey", "fake", "glitterbomb", "isotope", "ir_black", "liquibyte", "monokai-fannonedition", "oceanic", "night", "spectacular", "sunburst", "the-matrix", "tomorrow-night-blue", "tomorrow-night-bright", "tomorrow-night-eighties", "vibrant-ink", "xq-dark", "zenburn"];
 
         // Set iceRoot and update in settings display
         iceRoot = settings.iceRoot;
@@ -3734,13 +3917,24 @@ var ICEcoder = {
         // Set the active line color
         activeLineBG = 
         // Light themes
-        -1 < ["base16-light", "chrome-devtools", "duotone-light", "eclipse", "eiffel", "elegant", "mdn-like", "idle", "iplastic", "ir_white", "johnny", "juicy", "neat", "neo", "solarized", "ttcn", "xq-light"].indexOf(this.theme)
+        -1 < lightThemes.indexOf(this.theme)
             ? "#ccc"
             // Dark themes
-            : -1 < ["3024-night", "all-hallow-eve", "black-pearl-ii", "blackboard", "colorforth", "django", "emacs-strict", "fade-to-grey", "fake", "glitterbomb", "isotope", "ir_black", "liquibyte", "monokai-fannonedition", "oceanic", "night", "spectacular", "sunburst", "the-matrix", "tomorrow-night-blue", "tomorrow-night-bright", "tomorrow-night-eighties", "vibrant-ink", "xq-dark", "zenburn"].indexOf(this.theme)
+            : -1 < darkThemes.indexOf(this.theme)
                 ? "#222"
                 // Other themes
                 : "#000";
+
+        // Set the active line color
+        activeLineNum = 
+        // Light themes
+        -1 < lightThemes.indexOf(this.theme)
+            ? "#222"
+            // Dark themes
+            : -1 < darkThemes.indexOf(this.theme)
+                ? "#ccc"
+                // Other themes
+                : "#ccc";
 
         // Check/uncheck Code Assist setting
         if (settings.codeAssist !== this.codeAssist) {
@@ -3771,6 +3965,7 @@ var ICEcoder = {
         thisCSS[strCSS][4].style['border-left-width'] = settings.visibleTabs ? '1px' : '0';
         thisCSS[strCSS][4].style['margin-left'] = settings.visibleTabs ? '-1px' : '0';
         thisCSS[strCSS][2].style.cssText = "background-color: " + activeLineBG + " !important";
+        thisCSS[strCSS][5].style.cssText = "color: " + activeLineNum + " !important";
 
         // Set many of the ICEcoder settings
         this.lineWrapping = settings.lineWrapping;
@@ -3822,6 +4017,10 @@ var ICEcoder = {
         get('plugins').style.left = "left" === settings.pluginPanelAligned ? "0" : "auto";
         get('plugins').style.right = "right" === settings.pluginPanelAligned ? "0" : "auto";
 
+        // Enable/disable select next on find input and set goToLine scroll speed
+        this.selectNextOnFindInput = settings.selectNextOnFindInput;
+        this.goToLineScrollSpeed = settings.goToLineScrollSpeed;
+
         // Restart bug checking
         this.bugFilePaths = settings.bugFilePaths;
         this.bugFileCheckTimer = settings.bugFileCheckTimer;
@@ -3831,6 +4030,8 @@ var ICEcoder = {
             this.startBugChecking();
         } else {
             if ("undefined" != typeof this.bugFileCheckInt) {
+                get('bugIcon').style.color = "";
+                get('bugIcon').title = "Bug reporting not active";
                 clearInterval(this.bugFileCheckInt);
             }
         }
@@ -4042,9 +4243,7 @@ var ICEcoder = {
 
                 xhr.onreadystatechange=function() {
                     if (4 === xhr.readyState && 200 === xhr.status) {
-                        // console.log(xhr.responseText);
                         var statusArray = JSON.parse(xhr.responseText);
-                        // console.log(statusArray);
 
                         get('bugIcon').style.color =
                             statusArray['result'] == "off" ? "" :
@@ -4065,7 +4264,6 @@ var ICEcoder = {
 
                     }
                 };
-                // console.log('Calling '+bugCheckURL+' via XHR');
                 xhr.open("GET", bugCheckURL, true);
                 xhr.send();
 
@@ -4074,6 +4272,8 @@ var ICEcoder = {
             this.bugReportStatus = "ok";
         } else {
             if ("undefined" != typeof this.bugFileCheckInt) {
+                get('bugIcon').style.color = "";
+                get('bugIcon').title = "Bug reporting not active";
                 clearInterval(this.bugFileCheckInt);
             }
         }
@@ -4230,7 +4430,7 @@ var ICEcoder = {
         this.openFiles.push(shortURL);
 
         // Setup a new tab
-        closeTabLink = '<a nohref onClick="ICEcoder.closeTab(parseInt(this.parentNode.id.slice(3), 10))"><img src="' + this.iceLoc + '/assets/images/nav-close.gif" class="closeTab" onMouseOver="prevBG = this.style.backgroundColor; this.style.backgroundColor = \'#333\'; parent.ICEcoder.overCloseLink = true" onMouseOut="this.style.backgroundColor = prevBG; parent.ICEcoder.overCloseLink = false"></a>';
+        closeTabLink = '<a nohref onClick="ICEcoder.closeTab(parseInt(this.parentNode.id.slice(3), 10))"><img src="' + this.assetsLoc + '/images/nav-close.gif" class="closeTab" onMouseOver="prevBG = this.style.backgroundColor; this.style.backgroundColor = \'#333\'; parent.ICEcoder.overCloseLink = true" onMouseOut="this.style.backgroundColor = prevBG; parent.ICEcoder.overCloseLink = false"></a>';
         get('tab' + (this.openFiles.length)).style.display = "inline-block";
         fileName = this.openFiles[this.openFiles.length - 1];
         fileExt = fileName.substr(fileName.lastIndexOf(".") + 1);
@@ -4278,7 +4478,7 @@ var ICEcoder = {
         this.openFiles[tabNum - 1] = newName;
 
         // Setup a new tab
-        closeTabLink = '<a nohref onClick="ICEcoder.closeTab(parseInt(this.parentNode.id.slice(3), 10))"><img src="' + this.iceLoc + '/assets/images/nav-close.gif" class="closeTab" onMouseOver="prevBG = this.style.backgroundColor; this.style.backgroundColor = \'#333\'; parent.ICEcoder.overCloseLink = true" onMouseOut="this.style.backgroundColor = prevBG; parent.ICEcoder.overCloseLink = false"></a>';
+        closeTabLink = '<a nohref onClick="ICEcoder.closeTab(parseInt(this.parentNode.id.slice(3), 10))"><img src="' + this.assetsLoc + '/images/nav-close.gif" class="closeTab" onMouseOver="prevBG = this.style.backgroundColor; this.style.backgroundColor = \'#333\'; parent.ICEcoder.overCloseLink = true" onMouseOut="this.style.backgroundColor = prevBG; parent.ICEcoder.overCloseLink = false"></a>';
         fileName = this.openFiles[tabNum - 1];
         fileExt = fileName.substr(fileName.lastIndexOf(".") + 1);
         get('tab' + tabNum).innerHTML = closeTabLink + "<span style=\"display: inline-block; width: 19px\"></span>" + fileName.slice(fileName.lastIndexOf("/")).replace(/\//, "");
@@ -4364,7 +4564,7 @@ var ICEcoder = {
                 : this.savedPoints[closeTabNum - 1] !== this.getcMInstance(closeTabNum).changeGeneration()
             )
         )) {
-            okToRemove = this.ask(t['You have made...']);
+            okToRemove = this.ask(t['You have made...'] + "\n\n" + this.openFiles[closeTabNum - 1]);
         }
 
         if (true === okToRemove) {
@@ -4408,6 +4608,8 @@ var ICEcoder = {
             // Grey out the view icon
             if (0 === this.openFiles.length) {
                 this.fMIconVis('fMView', 0.3);
+                // Also clear any find results
+                this.clearResultsDisplays();
             } else {
                 // Switch the mode & the tab
                 this.switchMode();
@@ -4435,6 +4637,9 @@ var ICEcoder = {
 
             // Update the title tag to indicate any changes
             this.indicateChanges();
+
+            // Set bool value to false to avoid being stuck on true
+            this.overCloseLink = false;
         }
         // Lastly, set the widths
         this.setTabWidths(true);
@@ -4676,22 +4881,36 @@ var ICEcoder = {
 // UI
 // ==
 
+    // Return bool of true if an Apple Mac Cmd key
+    isCmdKey: function(key) {
+        // Mac command key handling (224 = Moz, 91/93 = Webkit Left/Right Apple)
+        return -1 < [224, 91, 93].indexOf(key);
+    },
+
+    // Return bool of true if either CTRL or Cmd key is down
+    ctrlCmdKeyDown: function(evt) {
+        let key;
+
+        key = evt.keyCode ?? evt.which ?? evt.charCode;
+
+        // Return bool of true if either is true, false otherwise
+        return evt.ctrlKey || this.isCmdKey(key);
+    },
+
     // Detect keys/combos plus identify our area and set the vars, perform actions
     interceptKeys: function(area, evt) {
         let key, ctrlOrCmd, cM, thisCM;
 
         key = evt.keyCode ?? evt.which ?? evt.charCode;
 
+        // Mac command key handling
+        this.cmdKey = this.isCmdKey(key);
+
         // Reset the auto-logout timer
         this.resetAutoLogoutTimer();
 
-        // Mac command key handling (224 = Moz, 91/93 = Webkit Left/Right Apple)
-        if (-1 < [224, 91, 93].indexOf(key)) {
-            this.cmdKey = true;
-        }
-
         // Set bool based on CTRL or Cmd key being pressed
-        ctrlOrCmd = -1 < [evt.ctrlKey, this.cmdKey].indexOf(true);
+        ctrlOrCmd = this.ctrlCmdKeyDown(evt);
 
         // F1 (zoom code out non declaration lines)
         if (112 === key) {
@@ -4988,6 +5207,7 @@ var ICEcoder = {
             this.codeZoomedOut = false;
         }
         this.cmdKey = false;
+        this.draggingWithKey = false;
     },
 
     // Handle Enter and Escape keys in modals
@@ -5082,7 +5302,7 @@ var ICEcoder = {
                 "height": 55,
                 "top": -55,
                 "left": 0,
-                "title": "<img src=\"" + this.iceLoc + "/assets/images/icecoder.png\" style=\"position: absolute; margin: -105px 0 0 -55px\"><br><br>Code editor awesomeness ...in your browser",
+                "title": "<img src=\"" + this.assetsLoc + "/images/icecoder.png\" style=\"position: absolute; margin: -105px 0 0 -55px\"><br><br>Code editor awesomeness ...in your browser",
                 "message": "View the quick start tutorial? (Well worthwhile!) or <a onclick=\"ICEcoder.viewTutorial(99, 0)\" style=\"font-size: 14px; text-decoration: underline; cursor: pointer\">skip it</a>.",
                 "button": "view tutorial"
             },

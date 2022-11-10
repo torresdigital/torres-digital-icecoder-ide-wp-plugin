@@ -63,7 +63,7 @@ if (false === $demoMode && isset($_SESSION['loggedIn']) && $_SESSION['loggedIn']
 
         $ICEcoder["plugins"][] = [
             $pluginsData[$_GET['plugin']]['name'],
-            $pluginsData[$_GET['plugin']]['icon'],
+            str_replace("images/", "plugins/", $pluginsData[$_GET['plugin']]['icon']),
             $pluginsData[$_GET['plugin']]['style'],
             $pluginsData[$_GET['plugin']]['URL'],
             $pluginsData[$_GET['plugin']]['target'],
@@ -149,6 +149,10 @@ function deletePlugin($dir) {
     closedir($theDir);
     rmdir($dir);
 }
+
+$assetsPath = "assets" === $settingsClass->assetsRoot
+    ? "../" . $settingsClass->assetsRoot
+    : $settingsClass->assetsRoot
 ?>
 <!DOCTYPE html>
 
@@ -157,8 +161,8 @@ function deletePlugin($dir) {
     <title>ICEcoder <?php echo $ICEcoder["versionNo"];?> plugins manager</title>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta name="robots" content="noindex, nofollow">
-    <link rel="stylesheet" type="text/css" href="../assets/css/resets.css?microtime=<?php echo microtime(true);?>">
-    <link rel="stylesheet" type="text/css" href="../assets/css/plugins-manager.css?microtime=<?php echo microtime(true);?>">
+    <link rel="stylesheet" type="text/css" href="<?php echo $assetsPath;?>/css/resets.css?microtime=<?php echo microtime(true);?>">
+    <link rel="stylesheet" type="text/css" href="<?php echo $assetsPath;?>/css/plugins-manager.css?microtime=<?php echo microtime(true);?>">
 </head>
 
 <body class="pluginsManager" onkeyup="parent.ICEcoder.handleModalKeyUp(event, 'pluginsManager')" onload="this.focus();">
@@ -218,8 +222,14 @@ function deletePlugin($dir) {
         <h2><?php echo $t['Install'] . ' / ' . $t['Uninstall'];?></h2><br>
 
         <?php
+        // ZipArchive plugin not available
+        if (false === class_exists('ZipArchive')) {
+            echo "Sorry, you don't have the ZipArchive class in your PHP installation, or it's not enabled in php.ini.";
+        // Cannot get data? Show error info
+        } elseif (0 === count($pluginsData)) {
+            echo "Sorry, unable to get plugin data. Please make sure you have either curl or fopen available on your server.";
         // Show list of plugins
-        if (0 < count($pluginsData)) {
+        } else {
             ?>
             <table>
                 <?php
@@ -236,7 +246,7 @@ function deletePlugin($dir) {
                     }
 
                     $reloadExtra = "true" === $pluginsData[$i]['reload'] ? '<br><span style="color: #888">' . $t['Reload after install...'] . '</span>' : '';
-                    echo '<td style="padding: 0 10px 18px 0; width: 28px; text-align: center"><img src="https://icecoder.net/' . $pluginsData[$i]['icon'] . '" alt="'.$pluginsData[$i]['name'] . '"></td>';
+                    echo '<td style="padding: 0 10px 18px 0; width: 28px; text-align: center"><img src="https://plugins.icecoder.net/' . $pluginsData[$i]['icon'] . '" alt="'.$pluginsData[$i]['name'] . '"></td>';
                     echo '<td style="padding: 8px 10px 8px 0; width: 250px; white-space: nowrap">' . $pluginsData[$i]['name'] . $reloadExtra . '</td>';
                     $styleExtra = (1 === $i % 2 || $i === count($pluginsData) - 1) ? "0" : "30px";
                     echo '<td style="padding: 3px ' . $styleExtra . ' 8px 0">' . $installUninstallButton . '</td>';
@@ -249,9 +259,6 @@ function deletePlugin($dir) {
             </table>
 
             <?php
-            // Cannot get data? Show error info
-        } else {
-            die("Sorry, unable to get plugin data. Please make sure you have either curl or fopen available on your server.");
         }
         ?>
     </div>

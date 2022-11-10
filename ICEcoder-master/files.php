@@ -9,10 +9,10 @@ $t = $text['files'];
 <head>
     <title>ICEcoder <?php echo $ICEcoder["versionNo"];?> file manager</title>
     <meta name="robots" content="noindex, nofollow">
-    <link rel="stylesheet" type="text/css" href="assets/css/resets.css?microtime=<?php echo microtime(true);?>">
-    <link rel="stylesheet" type="text/css" href="assets/css/files.css?microtime=<?php echo microtime(true);?>">
-    <link rel="stylesheet" type="text/css" href="assets/css/file-types.css?microtime=<?php echo microtime(true);?>">
-    <link rel="stylesheet" type="text/css" href="assets/css/file-type-icons.css?microtime=<?php echo microtime(true);?>">
+    <link rel="stylesheet" type="text/css" href="<?php echo $settingsClass->assetsRoot;?>/css/resets.css?microtime=<?php echo microtime(true);?>">
+    <link rel="stylesheet" type="text/css" href="<?php echo $settingsClass->assetsRoot;?>/css/files.css?microtime=<?php echo microtime(true);?>">
+    <link rel="stylesheet" type="text/css" href="<?php echo $settingsClass->assetsRoot;?>/css/file-types.css?microtime=<?php echo microtime(true);?>">
+    <link rel="stylesheet" type="text/css" href="<?php echo $settingsClass->assetsRoot;?>/css/file-type-icons.css?microtime=<?php echo microtime(true);?>">
     <!--Updated via settings so must remain 5th stylesheet//-->
     <style>
         ul.fileManager li a span { font-size:  <?php echo $ICEcoder["fontSize"];?>; }
@@ -32,7 +32,7 @@ $t = $text['files'];
     if (false === is_dir($docRoot . $iceRoot)) {
         echo '<li class="pft-directory dir"><a nohref title="' . $displayRoot . ' : can\'t access dir" onclick="parent.ICEcoder.settingsScreen(false, \'general\')" style="position: relative; left:-22px">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="background: #b00">/ ';
         echo $displayRoot;
-        echo '</span></a></li>';
+        echo '</span></a></li></ul>';
     } else {
     ?><li class="pft-directory dirOpen"><a nohref title="/" ondragover="parent.ICEcoder.overFileFolder('folder', '|'); parent.ICEcoder.highlightFileFolder('|', true);" ondragleave="parent.ICEcoder.overFileFolder('folder', ''); parent.ICEcoder.highlightFileFolder('|', false);" onmouseover="parent.ICEcoder.overFileFolder('folder', '|')" onmouseout="parent.ICEcoder.overFileFolder('folder', '')" onclick="parent.ICEcoder.openCloseDir(this)" style="position: relative; left:-22px">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span id="|">/ <?php
         echo $displayRoot;

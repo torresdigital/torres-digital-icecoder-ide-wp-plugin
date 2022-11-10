@@ -20,7 +20,8 @@ class File
     public function check() {
         global $file, $fileOrig, $docRoot, $iceRoot, $fileLoc, $fileName, $error, $errorStr, $errorMsg;
         // Replace pipes with slashes, then establish the actual name as we may have HTML entities in filename
-        $file = html_entity_decode(str_replace("|", "/", $file));
+        // Infact we may have &amplt; which when decoded is &lt; and decoded again is original < so decoding twice is needed
+        $file = html_entity_decode(html_entity_decode(str_replace("|", "/", $file)));
 
         // Put the original $file var aside for use
         $fileOrig = $file;
@@ -108,9 +109,9 @@ class File
     }
 
     public function load() {
-        global $file, $fileLoc, $fileName, $t;
+        global $file, $fileLoc, $fileName, $t, $lineNumber;
         echo 'action="load";';
-        $lineNumber = max(isset($_REQUEST['lineNumber']) ? intval($_REQUEST['lineNumber']) : 1, 1);
+        $lineNumber = max(isset($_GET['lineNumber']) ? intval($_GET['lineNumber']) : 1, 1);
         // Check this file isn't on the banned list at all
         $canOpen = true;
         for ($i = 0; $i < count($_SESSION['bannedFiles']); $i++) {
@@ -233,7 +234,7 @@ class File
             parent.parent.document.getElementById(\'blackMask\').style.visibility = "visible";
             parent.parent.document.getElementById(\'mediaContainer\').innerHTML =
                 "<canvas id=\"canvasPicker\" width=\"1\" height=\"1\" style=\"position: absolute; margin: 10px 0 0 10px; cursor: crosshair\"></canvas>" +
-                "<img src=\"' . $fileLoc . "/" . $fileName . "?unique=" . microtime(true) .'\" style=\"border: solid 10px #fff; max-width: 700px; max-height: 500px; background-color: #000; background-image: url(\'assets/images/checkerboard.png\')\" onLoad=\"reducedImgMsg = (this.naturalWidth > 700 || this.naturalHeight > 500) ? \', ' .$t['displayed at'] . '\' + this.width + \' x \' + this.height : \'\'; document.getElementById(\'imgInfo\').innerHTML += \' (\' + this.naturalWidth + \' x \' + this.naturalHeight + reducedImgMsg + \')\'; ICEcoder.initCanvasImage(this); ICEcoder.interactCanvasImage(this)\"><br>" +
+                "<img src=\"' . $fileLoc . "/" . $fileName . "?unique=" . microtime(true) .'\" class=\"imgDisplay\" onLoad=\"reducedImgMsg = (this.naturalWidth > 700 || this.naturalHeight > 500) ? \', ' .$t['displayed at'] . '\' + this.width + \' x \' + this.height : \'\'; document.getElementById(\'imgInfo\').innerHTML += \' (\' + this.naturalWidth + \' x \' + this.naturalHeight + reducedImgMsg + \')\'; ICEcoder.initCanvasImage(this); ICEcoder.interactCanvasImage(this)\"><br>" +
             "<div style=\"display: inline-block; margin-top: -10px; border: solid 10px #fff; color: #000; background-color: #fff\" id=\"imgInfo\"  onmouseover=\"parent.parent.ICEcoder.overPopup=true\" onmouseout=\"parent.parent.ICEcoder.overPopup=false\">" +
             "<b>' . $fileLoc . "/" . $fileName . '</b>" +
             "</div><br>" +
@@ -371,7 +372,7 @@ class File
         fclose($fh);
 
         if ($setPerms) {
-            chmod($file, octdec($ICEcoder['newFilePerms']));
+            chmod($file, octdec((string) $ICEcoder['newFilePerms']));
         }
         clearstatcache();
         $filemtime = "Windows" !== $serverType ? filemtime($file) : "1000000";
@@ -478,12 +479,12 @@ class File
         if (is_dir($source)) {
             $fileOrFolder = "folder";
             if (!is_dir($dest)) {
-                mkdir($dest, octdec($ICEcoder['newDirPerms']));
+                mkdir($dest, octdec((string) $ICEcoder['newDirPerms']));
             } else {
                 for ($i = 2; $i < 1000000000; $i++) {
                     if (!is_dir($dest . " (" . $i . ")")) {
                         $dest = $dest." (" . $i . ")";
-                        mkdir($dest, octdec($ICEcoder['newDirPerms']));
+                        mkdir($dest, octdec((string) $ICEcoder['newDirPerms']));
                         $i = 1000000000;
                     }
                 }
@@ -493,7 +494,7 @@ class File
                 RecursiveIteratorIterator::SELF_FIRST) as $item
             ) {
                 if ($item->isDir()) {
-                    mkdir($dest . DIRECTORY_SEPARATOR . $iterator->getSubPathName(), octdec($ICEcoder['newDirPerms']));
+                    mkdir($dest . DIRECTORY_SEPARATOR . $iterator->getSubPathName(), octdec((string) $ICEcoder['newDirPerms']));
                 } else {
                     copy($item->getPathName(), $dest . DIRECTORY_SEPARATOR . $iterator->getSubPathName());
                 }
@@ -549,8 +550,8 @@ class File
 
         $uploadDir = $docRoot . $iceRoot . str_replace("..", "", str_replace("|", "/", $_POST['folder'] . "/"));
         foreach($uploads as $current) {
-            $uploadedFile = $uploadDir . $current->name;
-            $fileName = $current->name;
+            $uploadedFile = $uploadDir . $current['name'];
+            $fileName = $current['name'];
             // Get & set existing perms for existing files, or set to newFilePerms setting for new files
             if (file_exists($uploadedFile)) {
                 $chmodInfo = substr(sprintf('%o', fileperms($uploadedFile)), -4);
@@ -571,8 +572,8 @@ class File
     }
 
     private function uploadThisFile($current, $uploadFile, $setPerms){
-        if (move_uploaded_file($current->tmp_name, $uploadFile)){
-            chmod($uploadFile, octdec($setPerms));
+        if (move_uploaded_file($current['tmp_name'], $uploadFile)){
+            chmod($uploadFile, octdec((string) $setPerms));
             return true;
         }
     }
@@ -581,10 +582,11 @@ class File
     public function getUploadedDetails($fileArr) {
         $uploads = [];
         foreach($fileArr['name'] as $keyee => $info) {
-            $uploads[$keyee]->name = xssClean($fileArr['name'][$keyee], "html");
-            $uploads[$keyee]->type = $fileArr['type'][$keyee];
-            $uploads[$keyee]->tmp_name = $fileArr['tmp_name'][$keyee];
-            $uploads[$keyee]->error = $fileArr['error'][$keyee];
+            $uploads[$keyee] = [];
+            $uploads[$keyee]['name'] = xssClean($fileArr['name'][$keyee], "html");
+            $uploads[$keyee]['type'] = $fileArr['type'][$keyee];
+            $uploads[$keyee]['tmp_name'] = $fileArr['tmp_name'][$keyee];
+            $uploads[$keyee]['error'] = $fileArr['error'][$keyee];
         }
         return $uploads;
     }
