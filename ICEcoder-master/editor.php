@@ -10,16 +10,16 @@ $t = $text['editor'];
 <title>ICEcoder <?php echo $ICEcoder["versionNo"];?> editor</title>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <meta name="robots" content="noindex, nofollow">
-<link rel="stylesheet" href="assets/css/codemirror.css?microtime=<?php echo microtime(true);?>">
-<link rel="stylesheet" href="assets/css/show-hint.css?microtime=<?php echo microtime(true);?>">
-<link rel="stylesheet" href="assets/css/lint.css?microtime=<?php echo microtime(true);?>">
+<link rel="stylesheet" href="<?php echo $settingsClass->assetsRoot;?>/css/codemirror.css?microtime=<?php echo microtime(true);?>">
+<link rel="stylesheet" href="<?php echo $settingsClass->assetsRoot;?>/css/show-hint.css?microtime=<?php echo microtime(true);?>">
+<link rel="stylesheet" href="<?php echo $settingsClass->assetsRoot;?>/css/lint.css?microtime=<?php echo microtime(true);?>">
 <!--
 codemirror-compressed.js
 - incls: codemirror
 - modes: clike, coffeescript, css, erlang, go, htmlmixed, javascript, julia, lua, markdown, perl, php, python, ruby, sass, sql, xml, yaml
 - addon: brace-fold, closebrackets, closetag, css-hint, foldcode, foldgutter, html-hint, javascript-hint, javascript-lint, lint, match-highlighter, matchbrackets, runmode, searchcursor, show-hint, simplescrollbars, sql-hint, trailingspace, xml-fold, xml-hint
 //-->
-<script src="assets/js/codemirror-compressed.js?microtime=<?php echo microtime(true);?>"></script>
+<script src="<?php echo $settingsClass->assetsRoot;?>/js/codemirror-compressed.js?microtime=<?php echo microtime(true);?>"></script>
 <?php
 $pluginFiles = [
 	"jshint/jshint-2.5.6.min.js",
@@ -36,23 +36,26 @@ for ($i = 0; $i < count($pluginFiles); $i++) {
 }
 ?>
 <link rel="stylesheet" href="<?php
-echo dirname(basename(__DIR__)) . '/assets/css/theme/';
+echo $settingsClass->assetsRoot . '/css/theme/';
 echo "default" === $ICEcoder["theme"] ? 'icecoder.css' : $ICEcoder["theme"] . '.css';
 echo "?microtime=" . microtime(true);
 // Light themes
 if (false !== array_search($ICEcoder["theme"], ["base16-light", "chrome-devtools", "duotone-light", "eclipse", "eiffel", "elegant", "mdn-like", "idle", "iplastic", "ir_white", "johnny", "juicy", "neat", "neo", "solarized", "ttcn", "xq-light"])) {
 	$activeLineBG = "#ccc";
+	$activeLineNum = "#222";
 // Dark themes
 } elseif (false !== array_search($ICEcoder["theme"], ["3024-night", "all-hallow-eve", "black-pearl-ii", "blackboard", "colorforth", "django", "emacs-strict", "fade-to-grey", "fake", "glitterbomb", "isotope", "ir_black", "liquibyte", "monokai-fannonedition", "oceanic", "night", "spectacular", "sunburst", "the-matrix", "tomorrow-night-blue", "tomorrow-night-bright", "tomorrow-night-eighties", "vibrant-ink", "xq-dark", "zenburn"])) {
 	$activeLineBG = "#222";
+	$activeLineNum = "#ccc";
 // Other themes
 } else {
 	$activeLineBG = "#000";
+	$activeLineNum = "#ccc";
 }
 ?>">
-<script src="assets/js/mmd.js?microtime=<?php echo microtime(true);?>"></script>
-<link rel="stylesheet" href="assets/css/foldgutter.css?microtime=<?php echo microtime(true);?>">
-<link rel="stylesheet" href="assets/css/simplescrollbars.css?microtime=<?php echo microtime(true);?>">
+<script src="<?php echo $settingsClass->assetsRoot;?>/js/mmd.js?microtime=<?php echo microtime(true);?>"></script>
+<link rel="stylesheet" href="<?php echo $settingsClass->assetsRoot;?>/css/foldgutter.css?microtime=<?php echo microtime(true);?>">
+<link rel="stylesheet" href="<?php echo $settingsClass->assetsRoot;?>/css/simplescrollbars.css?microtime=<?php echo microtime(true);?>">
 
 <style type="text/css">
 /* Make sure this next one remains the 1st item, updated with JS */
@@ -63,6 +66,8 @@ if (false !== array_search($ICEcoder["theme"], ["base16-light", "chrome-devtools
 .cm-matchhighlight, .CodeMirror-focused .cm-matchhighlight {color: #fff !important; background: #06c !important}
 /* Make sure this next one remains the 5th item, updated with JS */
 .cm-tab {border-left-width: <?php echo $ICEcoder["visibleTabs"] ? "1px" : "0";?>; margin-left: <?php echo $ICEcoder["visibleTabs"] ? "-1px" : "0";?>; border-left-style: solid; border-left-color: rgba(255,255,255,0.15)}
+/* Make sure this next one remains the 6th item, updated with JS */
+.cm-s-activeLine + .CodeMirror-gutter-wrapper > .CodeMirror-linenumber {color: <?php echo $activeLineNum;?> !important}
 .cm-trailingspace {
         background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAACCAYAAAB/qH1jAAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH3QUXCToH00Y1UgAAACFJREFUCNdjPMDBUc/AwNDAAAFMTAwMDA0OP34wQgX/AQBYgwYEx4f9lQAAAABJRU5ErkJggg==);
         background-position: bottom left;
@@ -79,26 +84,18 @@ if (false !== array_search($ICEcoder["theme"], ["base16-light", "chrome-devtools
 .CodeMirror-foldgutter-folded {background: #800; color: #ddd}
 .CodeMirror-foldgutter-folded:after {position: relative; top: -4px}
 h2 {color: rgba(0,198,255,0.7)}
-.heading {color: #888}
 .cm-s-diff {left: 50%}
-.diffGreen {background: #0b0 !important; color: #000 !important}
-.diffRed {background: #800 !important; color: #fff !important}
-.diffGrey {background: #444 !important; color: #fff !important}
-.diffGreyLighter {background: #888 !important; color: #1d1d1b !important}
-.diffNone {}
-.info {font-size: 10px; color: rgba(0,198,255,0.7); cursor: help}
-.dataItems {float: left; line-height: 14px}
-.dataItems span {line-height: 21px}
 </style>
-<link rel="stylesheet" href="assets/css/file-types.css?microtime=<?php echo microtime(true);?>">
-<link rel="stylesheet" href="assets/css/file-type-icons.css?microtime=<?php echo microtime(true);?>">
+<link rel="stylesheet" href="<?php echo $settingsClass->assetsRoot;?>/css/editor.css?microtime=<?php echo microtime(true);?>">
+<link rel="stylesheet" href="<?php echo $settingsClass->assetsRoot;?>/css/file-types.css?microtime=<?php echo microtime(true);?>">
+<link rel="stylesheet" href="<?php echo $settingsClass->assetsRoot;?>/css/file-type-icons.css?microtime=<?php echo microtime(true);?>">
 </head>
 
 <body style="color: #fff; margin: 0" onkeydown="return parent.ICEcoder.interceptKeys('content', event);" onkeyup="parent.ICEcoder.resetKeys(event);" onblur="parent.ICEcoder.resetKeys(event);" oncontextmenu="return false">
 
-<div style="display: none; margin: 32px 43px 0 43px; padding: 10px; width: 500px; font-family: arial; font-size: 10px; color: #ddd; background: #333" id="dataMessage"></div>
+<div class="dataMessage" id="dataMessage"></div>
 
-<div style="margin: 20px 43px 32px 43px; font-family: arial; font-size: 10px; color: #ddd">
+<div class="dataItemsContainer">
 	<div class="dataItems" style="width: 300px; margin-right: 50px">
 		<h2><?php echo $t['server'];?></h2>
 		<span class="heading"><?php echo $t['Server name, OS...'];?></span><br>
@@ -153,7 +150,7 @@ h2 {color: rgba(0,198,255,0.7)}
             ?>
             <h2><?php echo $t['multi-user']; ?></h2>
             <span class="heading"><?php echo $t['Username']; ?></span><br>
-            <?php echo $_SESSION['username'];?><br><br>
+            <?php echo xssClean($_SESSION['username'], "html");?><br><br>
             <?php
         }
         ?>
@@ -272,7 +269,7 @@ function createNewCMInstance(num) {
 function createNewCMInstanceEvents(num, pane) {
     window['cM' + num + pane].on("focus", function(thisCM) {parent.ICEcoder.cMonFocus(thisCM, 'cM' + num + pane)});
     window['cM' + num + pane].on("blur", function(thisCM) {parent.ICEcoder.cMonBlur(thisCM, 'cM' + num + pane)});
-    window['cM' + num + pane].on("keyup", function(thisCM) {parent.ICEcoder.cMonKeyUp(thisCM, 'cM' + num + pane)});
+    window['cM' + num + pane].on("keyup", function(thisCM, evt) {parent.ICEcoder.cMonKeyUp(thisCM, 'cM' + num + pane, evt)});
     window['cM' + num + pane].on("cursorActivity", function(thisCM) {parent.ICEcoder.cMonCursorActivity(thisCM, 'cM' + num + pane)});
     window['cM' + num + pane].on("beforeSelectionChange", function(thisCM, changeObj) {parent.ICEcoder . prevLine = thisCM.getCursor().line;});
     window['cM' + num + pane].on("change", function(thisCM, changeObj) {parent.ICEcoder.cMonChange(thisCM, 'cM' + num + pane, changeObj, CodeMirror)});
@@ -289,7 +286,7 @@ function createNewCMInstanceEvents(num, pane) {
 }
 </script>
 
-<div style="position: absolute; display: none; width: 12px; height: 100%; top: 0; right: 0; overflow: hidden; pointer-events: none; z-index: 2" id="resultsBar"></div>
+<div class="resultsBar" id="resultsBar"></div>
 
 <script>
 CodeMirror.commands.autocomplete = function(cM) {

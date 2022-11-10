@@ -13,6 +13,7 @@ h2 {font-size: 18px; font-weight: normal; color: #fff}
 .blackMask {position: fixed; display: table; width: 100%; height: 100%; top: 0; left: 0; visibility: hidden; background-color: rgba(0,0,0,0.8); text-align: center; z-index: 100}
 .blackMask .popupVCenter {#position: absolute; display: table-cell; #top: 50%; vertical-align: middle; text-align: center}
 .popupVCenter .popup {#position: relative; #top: -50%; text-align: center; color: #fff; font-size: 10px}
+.popupVCenter .popup .imgDisplay {border: solid 10px #fff; max-width: 700px; max-height: 500px; background-color: #000; background-image: url('../images/checkerboard.png')}
 .floatingContainer {position: absolute; top: 0; left: 0; width: 55px; height: 55px; visibility: hidden; border: solid 1px #444; image-rendering: pixelated}
 .floatingContainer:before {position: absolute; display: inline-block; width: 3px; height: 3px; left: 25px; top: 25px; content: ''; border: solid 1px #b00}
 
@@ -59,11 +60,7 @@ h2 {font-size: 18px; font-weight: normal; color: #fff}
 }
 .files .options .optionsList {position: absolute; display: inline-block; visibility: hidden; background: #383838; height: 100%; padding: 23px 15px 15px 15px}
 .files .options .optionsList ul {list-style-type: none; line-height: 24px}
-
-/* Old Style // .files .options .optionsList a {color: #666; text-decoration: none} */
-/* New style // to improve the user experience when clicking on the left menu options */
-.files .options .optionsList a {color: #cacaca; text-decoration: none;font-size: 11px;font-weight: bold;border: 1px solid #666;border-radius: 30px;padding: 0px 10px;width: 50%;position: relative;display: inline-block;margin: 5px auto;animation: shadow-pulse 1s infinite;cursor: pointer;box-shadow: 0 0 0 rgba(204,169,44, 0.4);}
-
+.files .options .optionsList a {color: #666; text-decoration: none}
 .files .options .optionsList a:hover {color: #fff; cursor: pointer}
 .files input:focus, .password:focus {outline: none; background: rgba(0,198,255,0.5); color: #fff}
 .files .button {position: absolute; border: 0; background: #444; color: #eee; height: 20px; margin-top: 16px; margin-left: 5px; font-size: 11px; cursor: pointer}
@@ -78,7 +75,7 @@ h2 {font-size: 18px; font-weight: normal; color: #fff}
 .files .tools .error {background: #800}
 .files .tools .info {background: #080}
 
-.editor {position: absolute; display: inline-block; top: 0; left: 15px; width: 2400px}
+.editor {position: fixed; display: inline-block; top: 0; left: 15px; width: 2400px}
 .editor .tabsBar {display: inline-block; height: 27px; width: 2400px; margin-top: 15px; padding-left: 53px; background: #fff}
 .tabsBar .tab {position: absolute; display: none; height: 15px; padding: 6px 8px 6px 9px; border-right: 1px solid #ddd; color: #fff; white-space: nowrap; overflow: hidden; cursor: pointer; z-index: 1;
     transition: width, left 0.15s ease-in-out;
@@ -110,7 +107,8 @@ h2 {font-size: 18px; font-weight: normal; color: #fff}
     appearance: none;
 }
 .findReplace .selectWrapper select:focus {outline: 0}
-.findReplace .findText {display: inline-block; height: 28px; font-size: 10px; margin: 7px 3px 0 27px}
+.findReplace .findRegexToggle {display: inline-block; height: 10px; width: 16px; font-size: 10px; margin: 3px 0 0 5px; padding: 4px 1px; border-radius: 2px; text-align: center; cursor: pointer}
+.findReplace .findText {display: inline-block; height: 28px; font-size: 10px; margin: 7px 3px 0 4px}
 .findReplace .find {position: relative; width: 167px; height: 28px; border: 0; top: -2px; font-size: 12px; padding-left: 5px; margin-right: 3px; background: #444; color: #eee}
 .findReplace .replaceText {height: 28px; font-size: 10px; margin: 6px 3px 0 2px}
 .findReplace .replace {position: relative; width: 167px; height: 28px; border: 0; top: -2px; font-size: 12px; padding-left: 5px; background: #444; color: #eee}
@@ -171,11 +169,9 @@ h2 {font-size: 18px; font-weight: normal; color: #fff}
 .screenCenter .text {position: relative; display: block; margin-top: 15px; font-size: 10px; color: #888}
 .screenCenter .text input {margin-top: 1px}
 .screenCenter .text a {position: relative; display: block; margin-top: 15px; font-size: 10px; color: #888; text-decoration: none}
+.screenCenter .adminUser {margin-bottom: 15px; color: #bbb}
 .screenCenter .password {border: 0; background-color: #333; color: #fff; height: 20px}
 .screenCenter .password:focus {outline: none; background: rgba(0,198,255,0.5); color: #fff}
 .screenCenter .button {border: 0; background: #444; color: #eee; height: 22px; cursor: pointer}
 .screenCenter .button:hover {background: #2187e7; color: #eee}
 .screenCenter .iconCapsLock {position: absolute; margin-left: 2px; color: #888}
-
-@keyframes shadow-pulse{0% {box-shadow: 0 0 0 0px rgba(0, 0, 0, 0.2);}100% {box-shadow: 0 0 0 15px rgba(0, 0, 0, 0);}}
-
