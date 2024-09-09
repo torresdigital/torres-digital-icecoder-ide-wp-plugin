@@ -1,6 +1,6 @@
 ## === Torres Digital ICECoder IDE Wordpress Plugin ===
 
-Contributors: Anderson Torres @atorresbr <br/>
+Contributors: Anderson Torres @atorresbr https://www.facebook.com/profile.php?id=61565132277449 <br/>
 Tags: Icecoder, Torres Digital, ICECoder Wordpress Plugin<br/>
 Requires at least: WordPress 4.4<br/>
 Requires the PHP version: 5.6<br/>
